@@ -12,7 +12,7 @@
 </head>
 <body>
 
-<div id="onboarding" style="display: none !important;">
+<div id="onboarding" style="display: none;">
   <div class="onboard-step" id="onboard-1">
     <div>
       <div class="onboard-num">STEP 1 OF 6</div>
@@ -140,7 +140,7 @@
       </div>
     </div>
 
-    <div id="active-workout" style="display: none !important; flex-direction:column; flex:1; overflow:hidden">
+    <div id="active-workout" style="display:none; flex-direction:column; flex:1; overflow:hidden">
       <div class="workout-header">
         <div class="workout-header-left">
           <div class="workout-day-label" id="aw-type"></div>
@@ -233,9 +233,9 @@
         <div class="stat-card" style="grid-column: 1/-1"><div class="stat-val" id="stat-vol">0</div><div class="stat-lbl">Total Volume</div></div>
       </div>
 
-      <div style="display:flex; flex-direction:column; margin-top:4px;" id="cal-history-accordion-root"></div>
+      <div style="display:flex; flex-direction:column;" id="cal-history-accordion-root"></div>
 
-      <div class="card" style="margin-top:12px;">
+      <div class="card">
         <div class="section-label">Weekly Volume</div>
         <div class="vol-bars" id="vol-chart"></div>
       </div>
@@ -282,6 +282,57 @@
       Settings
     </button>
   </nav>
+
+  <div id="panel-workout-manager" class="full-panel">
+    <div class="panel-header">
+      <div class="panel-title" id="wm-panel-title-text">Manage Workouts</div>
+      <button class="btn btn-secondary btn-sm" onclick="closeFullscreenPanel('panel-workout-manager')">Back</button>
+    </div>
+    
+    <div id="panel-wm-dashboard-view" style="display:flex; flex-direction:column; gap:16px;">
+      <div style="display:flex; flex-direction:column; gap:10px;" id="panel-wm-routines-container"></div>
+      <div style="border-top:1px solid var(--bg3); padding-top:16px; margin-top:8px;">
+        <div class="field">
+          <label>New Custom Workout Variant</label>
+          <input type="text" id="panel-wm-new-name-field" placeholder="e.g. Push B, Leg Heavy">
+        </div>
+        <button class="btn btn-accent btn-sm" style="width:100%; margin-top:10px; padding:12px 14px;" onclick="createNewWorkoutProgramFromFullscreenHub()">+ Add Workout</button>
+      </div>
+    </div>
+
+    <div id="panel-wm-editing-view" style="display:none; flex-direction:column; gap:14px;">
+      <div id="fullscreen-cz-exercises-list-wrapper" style="display:flex; flex-direction:column; gap:12px;"></div>
+      <button class="btn btn-secondary btn-sm" onclick="openExerciseCatalogSelectorFullscreenPanel()">+ Add an Exercise</button>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:12px;">
+        <button class="btn btn-ghost" onclick="cancelFullscreenCustomizerEdit()">Cancel</button>
+        <button class="btn btn-accent" id="fullscreen-cz-save-trigger">Save Plan</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-exercise-catalogue-picker" class="full-panel" style="z-index:600;">
+    <div class="panel-header">
+      <div class="panel-title">Select Exercise</div>
+      <button class="btn btn-secondary btn-sm" onclick="closeFullscreenPanel('panel-exercise-catalogue-picker')">Cancel</button>
+    </div>
+    <div id="fullscreen-catalogue-tree-nodes" style="display:flex; flex-direction:column; gap:4px;"></div>
+  </div>
+
+  <div id="panel-schedule-builder" class="full-panel">
+    <div class="panel-header">
+      <div class="panel-title">Rotation Loop</div>
+      <button class="btn btn-secondary btn-sm" onclick="closeFullscreenPanel('panel-schedule-builder')">Back</button>
+    </div>
+    <div class="field" style="margin-bottom:16px;">
+      <label>Sequence Block Length</label>
+      <select id="sb-loop-len-selector" onchange="adjustFullscreenScheduleSlotsLayout(this.value)">
+        ${[1,2,3,4,5,6,7,8,9,10].map(n => `<option value="${n}">${n} Days</option>`).join('')}
+      </select>
+    </div>
+    <div id="sb-slots-inputs-list-wrapper" style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;"></div>
+    <button class="btn btn-accent" onclick="saveFullscreenScheduleSettingsPatternMatrix()">Save Rolling Vector</button>
+  </div>
+
 </div>
 
 <div id="rest-overlay">
@@ -297,11 +348,11 @@
       <div class="rest-unit">seconds left</div>
     </div>
   </div>
-  <div class="rest-next" id="rest-overlay-next" style="margin-bottom: 20px !important;"></div>
+  <div class="rest-next" id="rest-overlay-next"></div>
   
   <div class="snooze-container">
-    <button class="btn btn-secondary btn-sm" onclick="snoozeRestTimer(10)" style="flex:1; padding:12px 0;">+10s</button>
-    <button class="btn btn-secondary btn-sm" onclick="snoozeRestTimer(30)" style="flex:1; padding:12px 0;">+30s</button>
+    <button class="btn btn-secondary btn-sm" onclick="snoozeRestTimer(10)">+10s</button>
+    <button class="btn btn-secondary btn-sm" onclick="snoozeRestTimer(30)">+30s</button>
   </div>
   
   <button class="btn btn-accent rest-skip-btn" id="rest-skip-trigger">Skip Rest →</button>
