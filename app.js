@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════
-// WORKOUT TRACKER — CORE SCRIPT MATRIX WITH HIGH-FIDELITY PATH VECTORS
+// WORKOUT TRACKER — APPMATRIX CONTROLLER ENGINE WITH VULOVIX VECTORS
 // ═══════════════════════════════════════════════════════════════════
 
 const DB = {
@@ -29,19 +29,7 @@ const DEFAULT_SETTINGS = {
 };
 
 const MUSCLE_LABELS = {
-  chest: 'Chest',
-  lats: 'Lats',
-  deltoids: 'Shoulders',
-  biceps: 'Biceps',
-  triceps: 'Triceps',
-  trapezius: 'Traps',
-  obliques: 'Core',
-  abs: 'Core',
-  quadriceps: 'Quads',
-  hamstrings: 'Hamstrings',
-  gluteal: 'Glutes',
-  calves: 'Calves',
-  forearms: 'Forearms'
+  chest: 'Chest', lats: 'Lats', deltoids: 'Shoulders', biceps: 'Biceps', triceps: 'Triceps', trapezius: 'Traps', obliques: 'Core', abs: 'Core', quadriceps: 'Quads', hamstrings: 'Hamstrings', gluteal: 'Glutes', calves: 'Calves', forearms: 'Forearms'
 };
 
 const MUSCLE_COLOR = {
@@ -196,7 +184,12 @@ function showScreen(name) {
 }
 
 let onboardData = { pattern: ['push','pull','legs','rest'], blockedWeekdays: [], equipment: ['barbell','dumbbells','cables','machines'], level: 'intermediate', accentTheme: 'green' };
-function startOnboarding() { document.getElementById('onboarding').style.display = 'flex'; generatePatternSetup(4); generateOnboardColorPicker(); showOnboardStep(1); }
+function startOnboarding() { 
+  document.getElementById('onboarding').style.setProperty('display', 'flex', 'important'); 
+  generatePatternSetup(4); 
+  generateOnboardColorPicker(); 
+  showOnboardStep(1); 
+}
 function showOnboardStep(n) { document.querySelectorAll('.onboard-step').forEach(s => s.classList.remove('active')); document.getElementById('onboard-' + n).classList.add('active'); }
 
 function generatePatternSetup(len) {
@@ -234,7 +227,7 @@ function onboardNext(n) {
     onboardData.exerciseRestSeconds = parseInt(document.getElementById('ob-ex-rest').value) || 180;
     onboardData.weightUnit = document.querySelector('.ob-unit-chip.selected')?.dataset.unit || 'lbs';
     saveSettings({ ...DEFAULT_SETTINGS, ...onboardData, startDate: new Date().toISOString().split('T')[0] });
-    document.getElementById('onboarding').style.display = 'none';
+    document.getElementById('onboarding').style.setProperty('display', 'none', 'important');
     refreshAppStateLabels(); renderWorkoutScreen(); return;
   }
   showOnboardStep(n + 1);
@@ -278,7 +271,7 @@ function startWorkout(type) {
   };
 
   document.getElementById('workout-ready').style.display = 'none';
-  document.getElementById('active-workout').style.display = 'flex';
+  document.getElementById('active-workout').style.setProperty('display', 'flex', 'important');
   UI.workout.timerInterval = setInterval(updateWorkoutTimer, 1000);
   
   document.getElementById('aw-submit-set-btn').onclick = () => submitFocusedActiveSet();
@@ -426,7 +419,7 @@ function finishWorkout() {
     totalVolume: w.completedExercises.reduce((a,e) => a + e.sets.reduce((b,s)=>(b+(s.weight||0)*(s.reps||0)),0), 0)
   };
   saveWorkout(saved); UI.workout = null;
-  document.getElementById('active-workout').style.display = 'none';
+  document.getElementById('active-workout').style.setProperty('display', 'none', 'important');
   document.getElementById('workout-ready').style.display = 'flex';
   renderWorkoutScreen();
 }
@@ -456,6 +449,7 @@ function updateRestOverlayDisplay() {
   document.getElementById('rest-time-sec').textContent = Math.max(0, UI.restTimeRemaining);
 }
 
+// Fixed core countdown adjustments arithmetic variables cleanly
 function snoozeRestTimer(seconds) { UI.restTimeRemaining += seconds; UI.restDurationTotal += seconds; updateRestOverlayDisplay(); }
 
 function triggerRestEndExecution() {
@@ -557,7 +551,6 @@ function showWorkoutDetail(w) {
     <button class="btn btn-secondary" style="margin-top:8px;" onclick="closeModal()">Close</button>`);
 }
 
-// ── VULOVIX BODY-MUSCLES VECTOR PATH ENGINE OVERRIDES ─────────────────
 function renderMuscleMap() {
   const freq = getMusclesWorked(UI.musclePeriod); const maxFreq = Math.max(...Object.values(freq), 1);
   document.getElementById('muscle-diagram').innerHTML = UI.muscleView === 'front' ? frontBodySVG(freq, maxFreq) : backBodySVG(freq, maxFreq);
@@ -577,7 +570,6 @@ function renderMuscleMap() {
 function muscleOpacity(freq, maxFreq, ids) { const t = ids.reduce((a,id)=>a+(freq[id]||0), 0); return t === 0 ? 0.08 : 0.25 + 0.75 * (t / (ids.length * maxFreq)); }
 function mColor(ids) { return MUSCLE_COLOR[MUSCLE_LABELS[ids[0]]] || '#333'; }
 
-// High-Fidelity Path Coordinate Mappings from open-source body-muscles component
 function frontBodySVG(freq, maxFreq) {
   const op = (ids) => muscleOpacity(freq, maxFreq, ids); const c = (ids) => mColor(ids);
   return `
@@ -652,6 +644,7 @@ function renderSettings() {
     </div>`;
 }
 
+// Adjusted layout selectors to display: flex explicitly on active triggers
 function editSetting(key) {
   const s = getSettings();
   if (key === 'color') {
@@ -677,7 +670,16 @@ function adjustSettingsPatternSlots(len) {
   const wrap = document.getElementById('settings-slots-editor-wrap'); wrap.innerHTML = ''; const s = getSettings();
   for (let i = 0; i < parseInt(len); i++) {
     const val = s.pattern[i] || 'rest';
-    wrap.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg3); padding:6px; border-radius:6px;"><span>Slot #${i+1}</span><select class="settings-slot-select" style="width:120px; padding:4px;" data-index="${i}"><option value="push" ${val==='push'?'selected':''}>Push</option><option value="pull" ${val==='pull'?'selected':''}>Pull</option><option value="legs" ${val==='legs'?'selected':''}>Legs</option><option value="rest" ${val==='rest'?'selected':''}>Rest</option></select></div>`;
+    wrap.innerHTML += `
+      <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg3); padding:6px; border-radius:6px;">
+        <span>Slot #${i+1}</span>
+        <select class="settings-slot-select" style="width:120px; padding:4px;" data-index="${i}">
+          <option value="push" ${val==='push'?'selected':''}>Push</option>
+          <option value="pull" ${val==='pull'?'selected':''}>Pull</option>
+          <option value="legs" ${val==='legs'?'selected':''}>Legs</option>
+          <option value="rest" ${val==='rest'?'selected':''}>Rest</option>
+        </select>
+      </div>`;
   }
 }
 
@@ -744,8 +746,13 @@ function gatherCustomWorkoutBuilderRowsData() {
 function saveCustomWorkoutBuilderRows(type) { const data = gatherCustomWorkoutBuilderRowsData(); const customs = DB.get('customWorkouts') || {}; customs[type] = data; DB.set('customWorkouts', customs); closeModal(); renderSettings(); renderWorkoutScreen(); }
 function resetCustomWorkoutToLibraryDefaults(type) { if (!confirm('Reset plan back to initial template default configurations?')) return; const customs = DB.get('customWorkouts') || {}; customs[type] = []; DB.set('customWorkouts', customs); closeModal(); renderSettings(); renderWorkoutScreen(); }
 
-function showModal(html) { document.getElementById('modal-body').innerHTML = html; document.getElementById('modal-overlay').style.display = 'flex'; }
-function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
+function showModal(html) { 
+  document.getElementById('modal-body').innerHTML = html; 
+  document.getElementById('modal-overlay').style.setProperty('display', 'flex', 'important'); 
+}
+function closeModal() { 
+  document.getElementById('modal-overlay').style.setProperty('display', 'none', 'important'); 
+}
 function resetData() { if (confirm('Purge logs?')) { ['workouts','settings','customWorkouts'].forEach(k => DB.del(k)); location.reload(); } }
 
 function refreshAppStateLabels() {
@@ -759,6 +766,10 @@ function refreshAppStateLabels() {
 
 document.addEventListener('DOMContentLoaded', () => {
   applyAccentTheme();
+  // Double-verify layout displays start off strictly un-rendered during initial boot sequences
+  document.getElementById('modal-overlay').style.setProperty('display', 'none', 'important');
+  document.getElementById('active-workout').style.setProperty('display', 'none', 'important');
+
   if (!DB.get('settings')) { startOnboarding(); } 
   else { refreshAppStateLabels(); renderWorkoutScreen(); showScreen('workout'); }
 });
