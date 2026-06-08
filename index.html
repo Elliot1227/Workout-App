@@ -233,7 +233,9 @@
         <div class="stat-card" style="grid-column: 1/-1"><div class="stat-val" id="stat-vol">0</div><div class="stat-lbl">Total Volume</div></div>
       </div>
 
-      <div class="card">
+      <div style="display:flex; flex-direction:column; margin-top:4px;" id="cal-history-accordion-root"></div>
+
+      <div class="card" style="margin-top:12px;">
         <div class="section-label">Weekly Volume</div>
         <div class="vol-bars" id="vol-chart"></div>
       </div>
@@ -243,23 +245,14 @@
   <div class="screen" id="screen-muscles">
     <div class="screen-inner">
       <div class="page-title">Muscle Map</div>
-
       <div class="muscle-period-tabs">
         <button class="period-tab active" id="ptab-week" onclick="setMusclePeriod('week')">Week</button>
         <button class="period-tab" id="ptab-month" onclick="setMusclePeriod('month')">Month</button>
         <button class="period-tab" id="ptab-all" onclick="setMusclePeriod('all')">All Time</button>
       </div>
-
-      <div class="muscle-view-tabs">
-        <button class="muscle-tab active" id="mtab-front" onclick="setMuscleView('front')">Front</button>
-        <button class="muscle-tab" id="mtab-back" onclick="setMuscleView('back')">Back</button>
+      <div class="card" style="padding:16px; margin-top:8px;">
+        <div class="muscle-legend" id="muscle-legend"></div>
       </div>
-
-      <div class="card" style="padding:16px">
-        <div class="muscle-svg-wrap" id="muscle-diagram"></div>
-        <div class="muscle-legend" id="muscle-legend" style="margin-top:16px"></div>
-      </div>
-
       <div id="muscle-breakdown"></div>
     </div>
   </div>
@@ -304,7 +297,7 @@
       <div class="rest-unit">seconds left</div>
     </div>
   </div>
-  <div class="rest-next" id="rest-overlay-next"></div>
+  <div class="rest-next" id="rest-overlay-next" style="margin-bottom: 20px !important;"></div>
   
   <div class="snooze-container">
     <button class="btn btn-secondary btn-sm" onclick="snoozeRestTimer(10)" style="flex:1; padding:12px 0;">+10s</button>
