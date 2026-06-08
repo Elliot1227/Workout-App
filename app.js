@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════
-// WORKOUT TRACKER — ARCHITECTURAL STORAGE & EXECUTION RULES ENGINE
+// APPMATRIX CONTROLLER ENGINE — RE-ARCHITECTED FOR FULL-SCREEN PANELS
 // ═══════════════════════════════════════════════════════════════════
 
 const DB = {
@@ -19,7 +19,7 @@ const ACCENT_PALETTE = {
 const DEFAULT_SETTINGS = {
   pattern: ['Push A', 'Pull A', 'Legs A', 'rest'], 
   blockedWeekdays: [], 
-  equipment: ['barbell', 'dumbbells', 'cables', 'machines', 'kettlebells', 'bands'],
+  equipment: ['barbell', 'dumbbells', 'cables', 'machines'],
   level: 'intermediate',
   setRestSeconds: 90,
   exerciseRestSeconds: 180,
@@ -36,58 +36,46 @@ const MUSCLE_COLOR = {
   'Chest':'#ff6b6b','Lats':'#4d9fff','Shoulders':'#ffa94d','Biceps':'#3ddc84','Triceps':'#cc44ff','Traps':'#74c0fc','Quads':'#ffe066','Hamstrings':'#63e6be','Glutes':'#ff8c42','Calves':'#a9e34b','Core':'#748ffc','Forearms':'#e599f7'
 };
 
-// Expanded master directory sorted strictly by muscle group structures
 const MASTER_EXERCISES_CATALOGUE = [
-  // Chest
   { id: 'bench_press', name: 'Barbell Bench Press', muscle: 'chest', sets: 3, reps: [6, 8], weight: 135, equipment: 'barbell' },
   { id: 'incline_db_press', name: 'Incline Dumbbell Press', muscle: 'chest', sets: 3, reps: [8, 10], weight: 50, equipment: 'dumbbells' },
   { id: 'flat_db_press', name: 'Flat Dumbbell Press', muscle: 'chest', sets: 3, reps: [8, 10], weight: 55, equipment: 'dumbbells' },
-  { id: 'dips_chest', name: 'Chest Dips', muscle: 'chest', sets: 3, reps: [8, 10], weight: 0, equipment: 'machines' },
+  { id: 'dips_rack', name: 'Dip Rack Chest Dips', muscle: 'chest', sets: 3, reps: [8, 10], weight: 0, equipment: 'machines' },
   { id: 'band_fly', name: 'Resistance Band Fly', muscle: 'chest', sets: 3, reps: [12, 15], weight: 15, equipment: 'bands' },
-  // Back / Lats
   { id: 'deadlift', name: 'Barbell Deadlift', muscle: 'lats', sets: 3, reps: [5, 5], weight: 185, equipment: 'barbell' },
-  { id: 'lat_pulldown', name: 'Cable Lat Pulldown (Top Down)', muscle: 'lats', sets: 3, reps: [8, 12], weight: 100, equipment: 'cables' },
+  { id: 'lat_pulldown', name: 'Cable Vertical Lat Pulldown', muscle: 'lats', sets: 3, reps: [8, 12], weight: 100, equipment: 'cables' },
   { id: 'barbell_row', name: 'Bent Over Barbell Row', muscle: 'lats', sets: 3, reps: [6, 8], weight: 135, equipment: 'barbell' },
   { id: 'db_row', name: 'One Arm Dumbbell Row', muscle: 'lats', sets: 3, reps: [8, 12], weight: 45, equipment: 'dumbbells' },
-  { id: 'kettlebell_swings', name: 'Kettlebell Swing', muscle: 'lats', sets: 3, reps: [15, 20], weight: 35, equipment: 'kettlebells' },
-  // Shoulders
+  { id: 'kettlebell_swings', name: 'Kettlebell Swings', muscle: 'lats', sets: 3, reps: [15, 20], weight: 35, equipment: 'kettlebells' },
   { id: 'ohp', name: 'Barbell Overhead Press', muscle: 'deltoids', sets: 3, reps: [6, 8], weight: 95, equipment: 'barbell' },
   { id: 'db_shoulder_press', name: 'Dumbbell Shoulder Press', muscle: 'deltoids', sets: 3, reps: [8, 10], weight: 40, equipment: 'dumbbells' },
   { id: 'lateral_raise', name: 'Dumbbell Lateral Raise', muscle: 'deltoids', sets: 4, reps: [12, 15], weight: 15, equipment: 'dumbbells' },
   { id: 'band_facepull', name: 'Resistance Band Facepull', muscle: 'deltoids', sets: 3, reps: [15, 20], weight: 10, equipment: 'bands' },
-  // Biceps
   { id: 'barbell_curl', name: 'Barbell Curl', muscle: 'biceps', sets: 3, reps: [8, 12], weight: 65, equipment: 'barbell' },
-  { id: 'ez_bar_curl', name: 'EZ Curl Bar Bicep Curl', muscle: 'biceps', sets: 3, reps: [8, 12], weight: 55, equipment: 'barbell' },
+  { id: 'ez_bar_curl', name: 'EZ Curl Bar Curl', muscle: 'biceps', sets: 3, reps: [8, 12], weight: 55, equipment: 'barbell' },
   { id: 'db_hammer_curl', name: 'Dumbbell Hammer Curl', muscle: 'biceps', sets: 3, reps: [10, 12], weight: 25, equipment: 'dumbbells' },
-  // Triceps
-  { id: 'tricep_pushdown', name: 'Cable Tricep Pushdown (Top Down)', muscle: 'triceps', sets: 3, reps: [8, 12], weight: 50, equipment: 'cables' },
+  { id: 'tricep_pushdown', name: 'Cable Vertical Tricep Pushdown', muscle: 'triceps', sets: 3, reps: [8, 12], weight: 50, equipment: 'cables' },
   { id: 'skull_crusher', name: 'EZ Bar Skull Crusher', muscle: 'triceps', sets: 3, reps: [8, 12], weight: 45, equipment: 'barbell' },
-  { id: 'overhead_db_ext', name: 'Dumbbell Overhead Extension', muscle: 'triceps', sets: 3, reps: [10, 12], weight: 35, equipment: 'dumbbells' },
-  // Quads / Leg Compound
   { id: 'back_squat', name: 'Barbell Back Squat', muscle: 'quadriceps', sets: 3, reps: [6, 8], weight: 155, equipment: 'barbell' },
   { id: 'goblet_squat', name: 'Kettlebell Goblet Squat', muscle: 'quadriceps', sets: 3, reps: [10, 12], weight: 45, equipment: 'kettlebells' },
-  { id: 'db_lunges', name: 'Dumbbell Walking Lunges', muscle: 'quadriceps', sets: 3, reps: [10, 12], weight: 25, equipment: 'dumbbells' },
-  // Hamstrings / Glutes
   { id: 'rdl', name: 'Barbell Romanian Deadlift', muscle: 'hamstrings', sets: 3, reps: [8, 10], weight: 135, equipment: 'barbell' },
   { id: 'hip_thrust', name: 'Barbell Hip Thrust', muscle: 'gluteal', sets: 3, reps: [8, 12], weight: 185, equipment: 'barbell' },
-  // Calves
   { id: 'calf_raise', name: 'Dumbbell Calf Raise', muscle: 'calves', sets: 4, reps: [12, 15], weight: 35, equipment: 'dumbbells' }
 ];
 
-// High-science default workflows map array matching optimal sets, reps targets
 const BASE_SYSTEM_LIBRARY = {
   'Push A': [
     { id: 'bench_press', name: 'Barbell Bench Press', muscles: ['chest'], sets: 3, reps: [6, 8] },
     { id: 'ohp', name: 'Barbell Overhead Press', muscles: ['deltoids'], sets: 3, reps: [6, 8] },
     { id: 'incline_db_press', name: 'Incline Dumbbell Press', muscles: ['chest'], sets: 3, reps: [8, 10] },
     { id: 'lateral_raise', name: 'Dumbbell Lateral Raise', muscles: ['deltoids'], sets: 4, reps: [12, 15] },
-    { id: 'tricep_pushdown', name: 'Cable Tricep Pushdown (Top Down)', muscles: ['triceps'], sets: 3, reps: [8, 12] }
+    { id: 'tricep_pushdown', name: 'Cable Vertical Tricep Pushdown', muscles: ['triceps'], sets: 3, reps: [8, 12] }
   ],
   'Pull A': [
     { id: 'barbell_row', name: 'Bent Over Barbell Row', muscles: ['lats'], sets: 3, reps: [6, 8] },
-    { id: 'lat_pulldown', name: 'Cable Lat Pulldown (Top Down)', muscles: ['lats'], sets: 3, reps: [8, 12] },
+    { id: 'lat_pulldown', name: 'Cable Vertical Lat Pulldown', muscles: ['lats'], sets: 3, reps: [8, 12] },
     { id: 'db_row', name: 'One Arm Dumbbell Row', muscles: ['lats'], sets: 3, reps: [8, 12] },
-    { id: 'ez_bar_curl', name: 'EZ Curl Bar Bicep Curl', muscles: ['biceps'], sets: 3, reps: [8, 12] },
+    { id: 'ez_bar_curl', name: 'EZ Curl Bar Curl', muscles: ['biceps'], sets: 3, reps: [8, 12] },
     { id: 'band_facepull', name: 'Resistance Band Facepull', muscles: ['deltoids'], sets: 3, reps: [15, 20] }
   ],
   'Legs A': [
@@ -175,7 +163,7 @@ function showScreen(name) {
 }
 
 let onboardData = { pattern: ['Push A','Pull A','Legs A','rest'], blockedWeekdays: [], equipment: ['barbell','dumbbells','cables','machines'], level: 'intermediate', accentTheme: 'green' };
-function startOnboarding() { document.getElementById('onboarding').style.setProperty('display', 'flex', 'important'); generatePatternSetup(4); generateOnboardColorPicker(); showOnboardStep(1); }
+function startOnboarding() { document.getElementById('onboarding').style.display = 'flex'; generatePatternSetup(4); generateOnboardColorPicker(); showOnboardStep(1); }
 function showOnboardStep(n) { document.querySelectorAll('.onboard-step').forEach(s => s.classList.remove('active')); document.getElementById('onboard-' + n).classList.add('active'); }
 
 function generatePatternSetup(len) {
@@ -213,7 +201,7 @@ function onboardNext(n) {
     onboardData.exerciseRestSeconds = parseInt(document.getElementById('ob-ex-rest').value) || 180;
     onboardData.weightUnit = document.querySelector('.ob-unit-chip.selected')?.dataset.unit || 'lbs';
     saveSettings({ ...DEFAULT_SETTINGS, ...onboardData, startDate: new Date().toISOString().split('T')[0] });
-    document.getElementById('onboarding').style.setProperty('display', 'none', 'important');
+    document.getElementById('onboarding').style.display = 'none';
     refreshAppStateLabels(); renderWorkoutScreen(); return;
   }
   showOnboardStep(n + 1);
@@ -227,8 +215,8 @@ function renderWorkoutScreen() {
   }
   if (type === 'rest') {
     container.innerHTML = `
-      <select id="force-workout-selector" style="margin-bottom:10px;"></select>
-      <button class="btn btn-ghost" onclick="forceStartWorkout(document.getElementById('force-workout-selector').value)">Launch Target Workout</button>`;
+      <select id="force-workout-selector" style="margin-bottom:12px;"></select>
+      <button class="btn btn-accent" onclick="forceStartWorkout(document.getElementById('force-workout-selector').value)">Start Selection</button>`;
     populateWorkoutDropdown('force-workout-selector'); return;
   }
   container.innerHTML = `<div class="workout-day-badge">${type.toUpperCase()}</div><button class="btn btn-accent" onclick="startWorkout('${type}')">Start Workout</button>`;
@@ -255,7 +243,7 @@ function startWorkout(type) {
     completedExercises: [], totalVolume: 0, setTimestamps: plan.map(ex => ({ startTime: Date.now(), durations: [], restDurations: [] }))
   };
   document.getElementById('workout-ready').style.display = 'none';
-  document.getElementById('active-workout').style.setProperty('display', 'flex', 'important');
+  document.getElementById('active-workout').style.display = 'flex';
   UI.workout.timerInterval = setInterval(updateWorkoutTimer, 1000);
   document.getElementById('aw-submit-set-btn').onclick = () => submitFocusedActiveSet();
   UI.workout.setTimestamps[0].startTime = Date.now(); renderActiveExercise();
@@ -334,7 +322,6 @@ function submitFocusedActiveSet() {
   sets[si].weight = parseFloat(document.getElementById('focus-weight').value) || 0;
   sets[si].reps = parseInt(document.getElementById('focus-reps').value) || 0;
   
-  // High accuracy structural evaluation of deviation markers input
   if (sets[si].weight !== ex.suggestedWeight || sets[si].reps !== ex.suggestedReps) {
     sets[si].hasAsteriskDeviation = true;
   }
@@ -378,7 +365,7 @@ function finishWorkout() {
     id: w.date, date: w.date, type: w.type, duration: Math.floor((Date.now() - w.startTime) / 1000), exercises: w.completedExercises,
     totalVolume: w.completedExercises.reduce((a,e) => a + e.sets.reduce((b,s)=>(b+(s.weight||0)*(s.reps||0)),0), 0)
   };
-  saveWorkout(saved); UI.workout = null; document.getElementById('active-workout').style.setProperty('display', 'none', 'important');
+  saveWorkout(saved); UI.workout = null; document.getElementById('active-workout').style.display = 'none';
   document.getElementById('workout-ready').style.display = 'flex'; renderWorkoutScreen();
 }
 
@@ -415,7 +402,6 @@ function triggerRestEndExecution() {
 
 function clearRestTimer() { if (UI.restTimer) { clearInterval(UI.restTimer); UI.restTimer = null; } }
 
-// ── CALENDAR LOG MATRIX INTEGRATING NON-EXPANDED HISTORICAL ACORDION BLOCKS ──
 function renderCalendar() {
   const m = UI.calMonth; const yr = m.getFullYear(), mo = m.getMonth();
   document.getElementById('cal-month-label').textContent = m.toLocaleDateString('en-US', {month:'long', year:'numeric'});
@@ -437,7 +423,15 @@ function renderCalendar() {
     if (comp) { cell.classList.add('has-workout'); cell.onclick = () => renderHistoricalSummaryAccordion(comp); }
     else if (dayStr > todayStr && schedType !== 'rest') {
       cell.classList.add('scheduled'); const dot = document.createElement('div'); dot.className = 'cal-day-dot';
-      dot.style.background = '#555'; cell.appendChild(dot);
+      
+      // Auto-categorize custom routine colors inside the calendar
+      const normalizedName = schedType.toLowerCase();
+      let colorCode = '#555557';
+      if (normalizedName.includes('push')) colorCode = 'var(--red)';
+      else if (normalizedName.includes('pull')) colorCode = 'var(--blue)';
+      else if (normalizedName.includes('leg')) colorCode = 'var(--green)';
+      
+      dot.style.background = colorCode; cell.appendChild(dot);
     } else if (schedType === 'rest') { cell.classList.add('rest-day'); }
     grid.appendChild(cell);
   }
@@ -480,15 +474,14 @@ function renderVolChart() {
 
 function changeCalMonth(dir) { UI.calMonth = new Date(UI.calMonth.getFullYear(), UI.calMonth.getMonth() + dir, 1); renderCalendar(); }
 
-// Clean Sequential Hist View Injector with Collapsible Sets Layer Mapping rules
 function renderHistoricalSummaryAccordion(w) {
   const root = document.getElementById('cal-history-accordion-root'); root.innerHTML = '';
   const unit = getSettings().weightUnit; const d = new Date(w.date);
 
   const titleNode = document.createElement('div'); titleNode.style.cssText = 'font-size:12px; text-transform:uppercase; font-weight:700; color:var(--accent); margin:12px 0 6px 4px;';
-  titleNode.textContent = `${d.toLocaleDateString('en-US', {month:'short', day:'numeric'})} Logs`; root.appendChild(titleNode);
+  titleNode.textContent = `${d.toLocaleDateString('en-US', {month:'short', day:'numeric'})} Session Details`; root.appendChild(titleNode);
 
-  (w.exercises || []).forEach((ex, index) => {
+  (w.exercises || []).forEach((ex) => {
     const item = document.createElement('div'); item.className = 'history-summary-item';
     const totalExVol = ex.sets.reduce((a,s)=> a + (s.weight * s.reps), 0);
     const firstSet = ex.sets[0] || { weight: 0, reps: 0 };
@@ -496,7 +489,7 @@ function renderHistoricalSummaryAccordion(w) {
     item.innerHTML = `
       <div class="history-summary-header" onclick="toggleHistoricalSummaryAccordionNode(this)">
         <div style="flex:1; min-width:0; padding-right:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-          <strong>${ex.name}</strong> <span style="color:var(--text2); font-size:13px; margin-left:4px;">${ex.sets.length}x${firstSet.reps} (${firstSet.weight}${unit})</span>
+          <strong>${ex.name}</strong> <span style="color:var(--text2); font-size:13px; margin-left:4px;">${ex.sets.length} sets</span>
         </div>
         <div style="color:var(--accent); font-size:13px; font-weight:700; flex-shrink:0;">${totalExVol.toLocaleString()} ${unit} ➔</div>
       </div>
@@ -523,51 +516,63 @@ function toggleHistoricalSummaryAccordionNode(headerElement) {
   const content = headerElement.nextElementSibling; content.classList.toggle('open');
 }
 
-// ── SIMPLIFIED TEXT BREAKDOWN DATA ENGINE LAYER ──────────────────────
 function renderMuscleMap() {
   const freq = getMusclesWorked(UI.musclePeriod); const maxFreq = Math.max(...Object.values(freq), 1);
   const leg = document.getElementById('muscle-legend'); const shown = new Set(); const items = [];
+  
   Object.entries(freq).sort((a,b)=>b[1]-a[1]).forEach(([id, count]) => {
-    const lbl = MUSCLE_LABELS[id]; if (lbl && !shown.has(lbl)) { shown.add(lbl); items.push({lbl, count, color: MUSCLE_COLOR[lbl]||'#888'}); }
+    const lbl = MUSCLE_LABELS[id] || id; 
+    if (lbl && !shown.has(lbl)) { shown.add(lbl); items.push({lbl, count, color: MUSCLE_COLOR[lbl]||'#888'}); }
   });
+  
   leg.innerHTML = items.map(({lbl,count,color}) => `
-    <div class="muscle-pill" style="background:${color}15; border:1px solid ${color}40"><div class="muscle-pill-dot" style="background:${color}"></div><span style="color:${color}; font-weight:700;">${lbl} (${count})</span></div>`).join('');
+    <div class="muscle-pill" style="background:${color}15; border:1px solid ${color}40"><div class="muscle-pill-dot" style="background:${color}"></div><span style="color:${color}">${lbl} (×${count})</span></div>`).join('');
 
   const bd = document.getElementById('muscle-breakdown'); if (!items.length) { bd.innerHTML = ''; return; }
-  bd.innerHTML = `<div class="card"><div class="section-label" style="margin-bottom:12px;">Frequency</div>` +
+  bd.innerHTML = `<div class="card"><div class="section-label" style="margin-bottom:12px;">Distribution</div>` +
     items.map(({lbl,count,color}) => `<div style="margin-bottom:10px;"><div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px;"><span>${lbl}</span><span>${count}</span></div><div style="height:6px; background:var(--bg4); border-radius:3px; overflow:hidden;"><div style="height:100%; width:${window.isNaN(count/maxFreq)?0:Math.round(count/maxFreq*100)}%; background:${color};"></div></div></div>`).join('') + '</div>';
 }
+
 function getMusclesWorked(period) {
   const now = new Date(); const cutoff = period === 'week' ? 7 : period === 'month' ? 30 : 36500; const freq = {};
   getWorkouts().forEach(w => {
     if (((now - new Date(w.date)) / 86400000) > cutoff) return;
     (w.exercises || []).forEach(ex => {
+      // Correct distribution map lookup mapping
       let match = MASTER_EXERCISES_CATALOGUE.find(m => m.id === ex.id || m.name === ex.name);
-      if (match) { freq[match.muscle] = (freq[match.muscle] || 0) + 1; }
+      let mGroup = match ? match.muscle : (ex.muscles ? ex.muscles[0] : 'abs');
+      freq[mGroup] = (freq[mGroup] || 0) + 1;
     });
   }); return freq;
 }
 
 function setMusclePeriod(p) { UI.musclePeriod = p; document.querySelectorAll('.period-tab').forEach(t=>t.classList.remove('active')); document.getElementById('ptab-'+p).classList.add('active'); renderMuscleMap(); }
 
-// ── SETTINGS ENGINE MODAL SYSTEMS ──────────────────────────────────
+// ── FULL-SCREEN WORKSPACE PANELS MATRIX LAYOUT ROUTERS ────────────────
+function openFullscreenPanel(panelId) {
+  document.getElementById(panelId).style.display = 'flex';
+}
+function closeFullscreenPanel(panelId) {
+  document.getElementById(panelId).style.display = 'none';
+}
+
 function renderSettings() {
   const s = getSettings();
   document.getElementById('settings-content').innerHTML = `
     <div class="settings-section">
       <div class="settings-section-title">Schedule Builder</div>
-      <div class="settings-row" onclick="editSetting('pattern')"><div class="settings-row-left"><div class="settings-row-label">Rotation Loop</div><div class="settings-row-value">${s.pattern.join(' → ')}</div></div></div>
-      <div class="settings-row" onclick="editSetting('blocked')"><div class="settings-row-left"><div class="settings-row-label">Blocked Weekdays</div><div class="settings-row-value">${s.blockedWeekdays.length?s.blockedWeekdays.map(d=>['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]).join(', '):'None'}</div></div></div>
+      <div class="settings-row" onclick="openFullscreenScheduleBuilderPanel()"><div class="settings-row-left"><div class="settings-row-label">Rotation Loop</div><div class="settings-row-value">${s.pattern.join(' → ')}</div></div><div class="settings-row-right"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div></div>
+      <div class="settings-row" onclick="editSetting('blocked')"><div class="settings-row-left"><div class="settings-row-label">Blocked Weekdays</div><div class="settings-row-value">${s.blockedWeekdays.length?s.blockedWeekdays.map(d=>['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]).join(', '):'None'}</div></div><div class="settings-row-right"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div></div>
     </div>
     <div class="settings-section">
       <div class="settings-section-title">Routines Manager</div>
-      <div class="settings-row" onclick="openWorkoutsHubModal()"><div class="settings-row-left"><div class="settings-row-label">Manage Workouts</div><div class="settings-row-value">Edit premade templates or add variations</div></div></div>
+      <div class="settings-row" onclick="openFullscreenWorkoutManagerPanel()"><div class="settings-row-left"><div class="settings-row-label">Manage Workouts</div><div class="settings-row-value">Edit templates or create custom variants</div></div><div class="settings-row-right"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div></div>
     </div>
     <div class="settings-section">
       <div class="settings-section-title">Preferences</div>
-      <div class="settings-row" onclick="editSetting('unit')"><div class="settings-row-left"><div class="settings-row-label">Weight Unit</div><div class="settings-row-value">${s.weightUnit}</div></div></div>
-      <div class="settings-row" onclick="editSetting('color')"><div class="settings-row-left"><div class="settings-row-label">Theme Color</div><div class="settings-row-value" style="color:var(--accent); font-weight:700;">${s.accentTheme}</div></div></div>
-      <div class="settings-row" onclick="editSetting('timers')"><div class="settings-row-left"><div class="settings-row-label">Rest Timers</div><div class="settings-row-value">Sets: ${s.setRestSeconds}s · Exercises: ${s.exerciseRestSeconds}s</div></div></div>
+      <div class="settings-row" onclick="editSetting('unit')"><div class="settings-row-left"><div class="settings-row-label">Weight Unit</div><div class="settings-row-value">${s.weightUnit}</div></div><div class="settings-row-right"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div></div>
+      <div class="settings-row" onclick="editSetting('color')"><div class="settings-row-left"><div class="settings-row-label">Theme Color</div><div class="settings-row-value" style="color:var(--accent); font-weight:700;">${s.accentTheme}</div></div><div class="settings-row-right"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div></div>
+      <div class="settings-row" onclick="editSetting('timers')"><div class="settings-row-left"><div class="settings-row-label">Rest Timers</div><div class="settings-row-value">Sets: ${s.setRestSeconds}s · Exercises: ${s.exerciseRestSeconds}s</div></div><div class="settings-row-right"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div></div>
     </div>
     <div class="settings-section">
       <div class="settings-section-title">Data Storage</div>
@@ -590,27 +595,6 @@ function editSetting(key) {
     showModal(`<div class="modal-title">Weight Unit</div><select id="edit-global-unit"><option value="lbs" ${s.weightUnit==='lbs'?'selected':''}>lbs</option><option value="kg" ${s.weightUnit==='kg'?'selected':''}>kg</option></select><button class="btn btn-accent" style="margin-top:12px;" onclick="saveSettingsUnit()">Save</button>`);
   } else if (key === 'blocked') {
     showModal(`<div class="modal-title">Blocked Days</div><div class="chip-group" style="margin-top:8px;">${['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'].map((d,i)=>`<div class="chip settings-block-chip ${s.blockedWeekdays.includes(i)?'selected':''}" data-day="${i}" onclick="this.classList.toggle('selected')">${d}</div>`).join('')}</div><button class="btn btn-accent" style="margin-top:12px;" onclick="saveSettingsBlockedDays()">Save</button>`);
-  } else if (key === 'pattern') {
-    showModal(`<div class="modal-title">Loop Sequence</div><div class="field"><select id="edit-pattern-len" onchange="adjustSettingsPatternSlots(this.value)">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<option value="${n}" ${s.pattern.length===n?'selected':''}>${n} Days</option>`).join('')}</select></div><div id="settings-slots-editor-wrap" style="display:flex; flex-direction:column; gap:8px;"></div><button class="btn btn-accent" style="margin-top:12px;" onclick="saveSettingsPatternMatrix()">Save</button>`);
-    adjustSettingsPatternSlots(s.pattern.length);
-  }
-}
-
-function adjustSettingsPatternSlots(len) {
-  const wrap = document.getElementById('settings-slots-editor-wrap'); wrap.innerHTML = ''; const s = getSettings();
-  for (let i = 0; i < parseInt(len); i++) {
-    const val = s.pattern[i] || 'rest';
-    wrap.innerHTML += `
-      <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg3); padding:4px; border-radius:6px;">
-        <span>Slot #${i+1}</span>
-        <select class="settings-slot-select" id="settings-slot-select-${i}" style="width:140px; padding:4px;" data-index="${i}"></select>
-      </div>`;
-    populateWorkoutDropdown(`settings-slot-select-${i}`, val);
-    
-    // Append rest manually inside loop sequence selectors
-    const selNode = document.getElementById(`settings-slot-select-${i}`);
-    const restOpt = document.createElement('option'); restOpt.value = 'rest'; restOpt.textContent = 'Rest Day';
-    if(val === 'rest') restOpt.selected = true; selNode.appendChild(restOpt);
   }
 }
 
@@ -618,48 +602,75 @@ function saveSettingsThemeColor() { const dot = document.querySelector('#setting
 function saveSettingsTimers() { const s = getSettings(); s.setRestSeconds = parseInt(document.getElementById('edit-set-rest').value)||90; s.exerciseRestSeconds = parseInt(document.getElementById('edit-ex-rest').value)||180; saveSettings(s); closeModal(); renderSettings(); }
 function saveSettingsUnit() { const s = getSettings(); s.weightUnit = document.getElementById('edit-global-unit').value; saveSettings(s); closeModal(); renderSettings(); refreshAppStateLabels(); }
 function saveSettingsBlockedDays() { const s = getSettings(); s.blockedWeekdays = [...document.querySelectorAll('.settings-block-chip.selected')].map(c=>parseInt(c.dataset.day)); saveSettings(s); closeModal(); renderSettings(); renderCalendar(); }
-function saveSettingsPatternMatrix() { const s = getSettings(); const arr = []; document.querySelectorAll('.settings-slot-select').forEach(sel=>arr.push(sel.value)); s.pattern = arr; saveSettings(s); closeModal(); renderSettings(); renderCalendar(); renderWorkoutScreen(); }
 
-// ── RESTRUCTURED COMPREHENSIVE CUSTOM ROUTINES BLUEPRINT MANAGER HUB ──
-function openWorkoutsHubModal() {
-  const customs = DB.get('customWorkouts') || {};
-  const coreWorkouts = ['Push A', 'Pull A', 'Legs A'];
+// ── 1. RE-ARCHITECTED FULL-SCREEN SCHEDULE MATRIX BUILDER ────────────
+function openFullscreenScheduleBuilderPanel() {
+  const s = getSettings();
+  document.getElementById('sb-loop-len-selector').value = s.pattern.length;
+  adjustFullscreenScheduleSlotsLayout(s.pattern.length);
+  openFullscreenPanel('panel-schedule-builder');
+}
+
+function adjustFullscreenScheduleSlotsLayout(len) {
+  const wrap = document.getElementById('sb-slots-inputs-list-wrapper'); wrap.innerHTML = ''; const s = getSettings();
+  for (let i = 0; i < parseInt(len); i++) {
+    const val = s.pattern[i] || 'rest';
+    wrap.innerHTML += `
+      <div class="schedule-builder-row">
+        <span>Day Slot #${i+1}</span>
+        <select class="fullscreen-sb-select" id="fullscreen-sb-select-${i}"></select>
+      </div>`;
+    populateWorkoutDropdown(`fullscreen-sb-select-${i}`, val);
+    
+    const selNode = document.getElementById(`fullscreen-sb-select-${i}`);
+    const restOpt = document.createElement('option'); restOpt.value = 'rest'; restOpt.textContent = 'Rest Day';
+    if(val === 'rest') restOpt.selected = true; selNode.appendChild(restOpt);
+  }
+}
+
+function saveFullscreenScheduleSettingsPatternMatrix() {
+  const s = getSettings(); const arr = [];
+  document.querySelectorAll('.fullscreen-sb-select').forEach(sel => arr.push(sel.value));
+  s.pattern = arr; saveSettings(s);
+  closeFullscreenPanel('panel-schedule-builder'); renderSettings(); renderCalendar(); renderWorkoutScreen();
+}
+
+// ── 2. RE-ARCHITECTED FULL-SCREEN WORKOUT ROUTINES HUB MANAGER ───────
+function openFullscreenWorkoutManagerPanel() {
+  document.getElementById('panel-wm-dashboard-view').style.display = 'flex';
+  document.getElementById('panel-wm-editing-view').style.display = 'none';
+  document.getElementById('wm-panel-title-text').textContent = "Manage Workouts";
+  
+  const customs = DB.get('customWorkouts') || {}; const coreWorkouts = ['Push A', 'Pull A', 'Legs A'];
   const allRoutinesList = [...coreWorkouts, ...Object.keys(customs)];
 
-  showModal(`
-    <div class="modal-title" style="margin-bottom:8px;">Manage Workouts</div>
-    <div style="display:flex; flex-direction:column; gap:8px; max-height:45vh; overflow-y:auto;" id="modal-workouts-hub-list">
-      ${allRoutinesList.map(name => `
-        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg3); padding:12px; border-radius:var(--radius-sm); border:1px solid var(--border);">
-          <span style="font-weight:700;">${name}</span>
-          <button class="btn btn-accent btn-sm" onclick="openActiveWorkoutCustomizerFlow('${name}')">Edit</button>
-        </div>
-      `).join('')}
-    </div>
-    <div style="border-top:1px solid var(--border2); padding-top:12px; margin-top:4px;">
-      <div class="field">
-        <label>Add Custom Workout Program Variant</label>
-        <input type="text" id="new-workout-name-input" placeholder="e.g. Push B, Pull Heavy">
-      </div>
-      <button class="btn btn-accent btn-sm" style="width:100%; margin-top:8px;" onclick="createNewWorkoutProgramFromHub()">+ Add Workout</button>
-    </div>
-    <button class="btn btn-secondary btn-sm" style="margin-top:4px;" onclick="closeModal()">Close</button>
-  `);
+  const container = document.getElementById('panel-wm-routines-container'); container.innerHTML = '';
+  container.innerHTML = allRoutinesList.map(name => `
+    <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg2); padding:16px; border-radius:var(--radius); margin-bottom:4px;">
+      <span style="font-weight:700; font-size:16px; padding-left:2px;">${name}</span>
+      <button class="btn btn-accent btn-sm" onclick="startFullscreenWorkoutCustomizerEditorFlow('${name}')">Edit Routine</button>
+    </div>`).join('');
+    
+  openFullscreenPanel('panel-workout-manager');
 }
 
-function createNewWorkoutProgramFromHub() {
-  const name = document.getElementById('new-workout-name-input').value.trim();
-  if (!name || name === 'rest') { alert('Provide a valid distinctive name entry.'); return; }
-  
+function createNewWorkoutProgramFromFullscreenHub() {
+  const name = document.getElementById('panel-wm-new-name-field').value.trim();
+  if (!name || name === 'rest') { alert('Provide a valid unique name.'); return; }
   const customs = DB.get('customWorkouts') || {};
-  if (customs[name] || name === 'Push A' || name === 'Pull A' || name === 'Legs A') { alert('Workout template match name already exists.'); return; }
+  if (customs[name] || name === 'Push A' || name === 'Pull A' || name === 'Legs A') { alert('Routine name already used.'); return; }
 
   customs[name] = []; DB.set('customWorkouts', customs);
-  openActiveWorkoutCustomizerFlow(name);
+  document.getElementById('panel-wm-new-name-field').value = '';
+  startFullscreenWorkoutCustomizerEditorFlow(name);
 }
 
-let activeCustomizerRoutineStateArray = [];
-function openActiveWorkoutCustomizerFlow(workoutName) {
+let fullscreenEditorStateArray = [];
+function startFullscreenWorkoutCustomizerEditorFlow(workoutName) {
+  document.getElementById('panel-wm-dashboard-view').style.display = 'none';
+  document.getElementById('panel-wm-editing-view').style.display = 'flex';
+  document.getElementById('wm-panel-title-text').textContent = `Editing: ${workoutName}`;
+
   const customs = DB.get('customWorkouts') || {};
   let currentList = [];
   if (workoutName === 'Push A' || workoutName === 'Pull A' || workoutName === 'Legs A') {
@@ -668,118 +679,104 @@ function openActiveWorkoutCustomizerFlow(workoutName) {
     currentList = customs[workoutName] || [];
   }
 
-  activeCustomizerRoutineStateArray = JSON.parse(JSON.stringify(currentList));
+  fullscreenEditorStateArray = JSON.parse(JSON.stringify(currentList));
+  renderFullscreenEditorRows();
 
-  showModal(`
-    <div class="modal-title">Editing: ${workoutName}</div>
-    <div id="customizer-exercises-list-wrapper" style="display:flex; flex-direction:column; gap:10px; margin:8px 0; max-height:42vh; overflow-y:auto; padding-right:4px;"></div>
-    <button class="btn btn-secondary btn-sm" onclick="openExerciseCatalogSelectorModal()">+ Add an Exercise</button>
-    <div style="display:flex; gap:10px; margin-top:12px;">
-      <button class="btn btn-ghost" onclick="openWorkoutsHubModal()" style="flex:1;">Back</button>
-      <button class="btn btn-accent" onclick="saveCustomizerRoutineStateTree('${workoutName}')" style="flex:1;">Done</button>
-    </div>
-  `);
-
-  renderCustomizerEditorRowNodes();
+  document.getElementById('fullscreen-cz-save-trigger').onclick = () => {
+    customs[workoutName] = fullscreenEditorStateArray;
+    DB.set('customWorkouts', customs);
+    openFullscreenWorkoutManagerPanel();
+    renderWorkoutScreen();
+  };
 }
 
-function renderCustomizerEditorRowNodes() {
-  const container = document.getElementById('customizer-exercises-list-wrapper'); container.innerHTML = '';
-  if(activeCustomizerRoutineStateArray.length === 0) {
-    container.innerHTML = `<div style="text-align:center; color:var(--text3); padding:16px; font-size:14px;">No exercises loaded yet.</div>`; return;
+function renderFullscreenEditorRows() {
+  const container = document.getElementById('fullscreen-cz-exercises-list-wrapper'); container.innerHTML = '';
+  if (fullscreenEditorStateArray.length === 0) {
+    container.innerHTML = `<div style="text-align:center; color:var(--text3); padding:24px; font-size:14px;">No exercises. Add one below:</div>`; return;
   }
 
-  activeCustomizerRoutineStateArray.forEach((ex, idx) => {
+  fullscreenEditorStateArray.forEach((ex, idx) => {
     const row = document.createElement('div'); row.className = 'custom-workout-row';
     row.innerHTML = `
       <div class="custom-workout-row-header">
-        <span style="font-weight:700; font-size:14px; color:var(--text);">${ex.name}</span>
-        <button class="btn btn-danger btn-sm" onclick="removeExerciseFromCustomizerArray(${idx})" style="padding:4px 8px; font-size:11px; width:auto;">X</button>
+        <span style="font-weight:700; font-size:15px; color:var(--text);">${ex.name}</span>
+        <button class="btn btn-danger btn-sm" onclick="removeExerciseFromFullscreenCustomizer(${idx})" style="padding:4px 10px; font-size:12px; width:auto;">Remove</button>
       </div>
       <div class="custom-workout-grid-inputs">
-        <div><span>SETS</span><input type="number" id="cz-set-${idx}" value="${ex.sets || 3}" onchange="syncCustomizerRowInputs(${idx})"></div>
-        <div><span>REPS</span><input type="number" id="cz-rep-${idx}" value="${ex.reps ? ex.reps[0] : 10}" onchange="syncCustomizerRowInputs(${idx})"></div>
-        <div><span>START WT</span><input type="number" id="cz-wt-${idx}" value="${ex.suggestedWeight || ex.weight || 45}" onchange="syncCustomizerRowInputs(${idx})"></div>
-      </div>
-    `;
+        <div><span>SETS</span><input type="number" id="fcz-set-${idx}" value="${ex.sets || 3}" onchange="syncFullscreenEditorInputs(${idx})"></div>
+        <div><span>REPS</span><input type="number" id="fcz-rep-${idx}" value="${ex.reps ? ex.reps[0] : 10}" onchange="syncFullscreenEditorInputs(${idx})"></div>
+        <div><span>WEIGHT</span><input type="number" id="fcz-wt-${idx}" value="${ex.suggestedWeight || ex.weight || 45}" onchange="syncFullscreenEditorInputs(${idx})"></div>
+      </div>`;
     container.appendChild(row);
   });
 }
 
-function syncCustomizerRowInputs(idx) {
-  const sets = parseInt(document.getElementById(`cz-set-${idx}`).value) || 3;
-  const reps = parseInt(document.getElementById(`cz-rep-${idx}`).value) || 10;
-  const wt = parseFloat(document.getElementById(`cz-wt-${idx}`).value) || 45;
+function syncFullscreenEditorInputs(idx) {
+  const sets = parseInt(document.getElementById(`fcz-set-${idx}`).value) || 3;
+  const reps = parseInt(document.getElementById(`fcz-rep-${idx}`).value) || 10;
+  const wt = parseFloat(document.getElementById(`fcz-wt-${idx}`).value) || 45;
 
-  activeCustomizerRoutineStateArray[idx].sets = sets;
-  activeCustomizerRoutineStateArray[idx].reps = [reps, reps + 2];
-  activeCustomizerRoutineStateArray[idx].suggestedWeight = wt;
-  activeCustomizerRoutineStateArray[idx].weight = wt;
+  fullscreenEditorStateArray[idx].sets = sets;
+  fullscreenEditorStateArray[idx].reps = [reps, reps + 2];
+  fullscreenEditorStateArray[idx].suggestedWeight = wt;
+  fullscreenEditorStateArray[idx].weight = wt;
 }
 
-function removeExerciseFromCustomizerArray(idx) {
-  activeCustomizerRoutineStateArray.splice(idx, 1); renderCustomizerEditorRowNodes();
+function removeExerciseFromFullscreenCustomizer(idx) {
+  fullscreenEditorStateArray.splice(idx, 1); renderFullscreenEditorRows();
 }
 
-function openExerciseCatalogSelectorModal() {
-  // Sort array targets by clean physiological headers parameters neatly
+function cancelFullscreenCustomizerEdit() {
+  openFullscreenWorkoutManagerPanel();
+}
+
+// ── 3. FULL-SCREEN EXERCISE CATALOG SELECTION ENGINE ─────────────────
+function openExerciseCatalogSelectorFullscreenPanel() {
   const groups = {};
   MASTER_EXERCISES_CATALOGUE.forEach(ex => {
     const groupName = MUSCLE_LABELS[ex.muscle] || ex.muscle;
     if (!groups[groupName]) groups[groupName] = []; groups[groupName].push(ex);
   });
 
-  let htmlTree = `<div class="modal-title">Select Exercise</div><div style="max-height:55vh; overflow-y:auto; padding-right:4px;">`;
+  const container = document.getElementById('fullscreen-catalogue-tree-nodes'); container.innerHTML = '';
+  let fullTreeHtml = '';
   Object.keys(groups).sort().forEach(gName => {
-    htmlTree += `<div class="exercise-group-title">${gName}</div>`;
+    fullTreeHtml += `<div class="exercise-group-title">${gName}</div>`;
     groups[gName].forEach(ex => {
-      htmlTree += `
-        <div class="modal-selection-row" onclick="selectExerciseFromCatalogRowInjection('${ex.id}')">
-          <span>${ex.name}</span>
-          <span style="color:var(--text3); font-size:12px; text-transform:capitalize;">${ex.equipment}</span>
+      fullTreeHtml += `
+        <div class="modal-selection-row" onclick="selectExerciseFromFullscreenCatalogueInjection('${ex.id}')">
+          <span style="font-weight:600;">${ex.name}</span>
+          <span style="color:var(--text3); font-size:12px; text-transform:uppercase; letter-spacing:0.5px;">${ex.equipment}</span>
         </div>`;
     });
   });
-  htmlTree += `</div><button class="btn btn-secondary btn-sm" style="margin-top:8px;" id="cz-catalog-back-btn">Cancel</button>`;
-  
-  const currentModalHTML = document.getElementById('modal-body').innerHTML;
-  showModal(htmlTree);
-
-  document.getElementById('cz-catalog-back-btn').onclick = () => {
-    document.getElementById('modal-body').innerHTML = currentModalHTML;
-    renderCustomizerEditorRowNodes();
-  };
+  container.innerHTML = fullTreeHtml;
+  openFullscreenPanel('panel-exercise-catalogue-picker');
 }
 
-function selectExerciseFromCatalogRowInjection(catalogId) {
+function selectExerciseFromFullscreenCatalogueInjection(catalogId) {
   const match = MASTER_EXERCISES_CATALOGUE.find(c => c.id === catalogId);
   if (match) {
-    activeCustomizerRoutineStateArray.push({
+    fullscreenEditorStateArray.push({
       id: match.id, name: match.name, muscles: [match.muscle], sets: match.sets, reps: match.reps, suggestedWeight: match.weight, weight: match.weight
     });
   }
-  openActiveWorkoutCustomizerFlow(document.querySelector('.modal-title').textContent.split(': ')[1]);
+  closeFullscreenPanel('panel-exercise-catalogue-picker');
+  renderFullscreenEditorRows();
 }
 
-function saveCustomizerRoutineStateTree(workoutName) {
-  const customs = DB.get('customWorkouts') || {}; customs[workoutName] = activeCustomizerRoutineStateArray;
-  DB.set('customWorkouts', customs); openWorkoutsHubModal(); renderWorkoutScreen();
-}
-
-function showModal(html) { document.getElementById('modal-body').innerHTML = html; document.getElementById('modal-overlay').style.setProperty('display', 'flex', 'important'); }
-function closeModal() { document.getElementById('modal-overlay').style.setProperty('display', 'none', 'important'); }
+function showModal(html) { document.getElementById('modal-body').innerHTML = html; document.getElementById('modal-overlay').style.display = 'flex'; }
+function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
 function resetData() { if (confirm('Purge logs?')) { ['workouts','settings','customWorkouts'].forEach(k => DB.del(k)); location.reload(); } }
 
 function refreshAppStateLabels() {
   const label = document.getElementById('today-label');
-  if (label) { label.textContent = new Date().toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'}) + " · Scheduled: " + getTodayType().toUpperCase(); }
+  if (label) { label.textContent = new Date().toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'}) + " · Routine: " + getTodayType().toUpperCase(); }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').catch(()=>{}); }
   applyAccentTheme();
-  document.getElementById('modal-overlay').style.setProperty('display', 'none', 'important');
-  document.getElementById('active-workout').style.setProperty('display', 'none', 'important');
   if (!DB.get('settings')) { startOnboarding(); } 
   else { refreshAppStateLabels(); renderWorkoutScreen(); showScreen('workout'); }
 });
