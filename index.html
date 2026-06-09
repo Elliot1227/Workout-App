@@ -207,12 +207,12 @@
       <div class="screen-inner">
         <div class="page-title">History</div>
         <div class="cal-month-nav">
-          <button class="cal-nav-btn" onclick="changeCalMonth(-1)">
+          <button class="back-circle-btn" onclick="changeCalMonth(-1)">
             <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
           <h2 id="cal-month-label"></h2>
-          <button class="cal-nav-btn" onclick="changeCalMonth(1)">
-            <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+          <button class="back-circle-btn" style="transform: rotate(180deg);" onclick="changeCalMonth(1)">
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
         </div>
         <div class="card" style="padding:12px">
@@ -279,19 +279,23 @@
 
   <div id="panel-workout-manager" class="full-panel">
     <div class="panel-header">
+      <button class="back-circle-btn" onclick="closeFullscreenPanel('panel-workout-manager')">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
       <div class="panel-title" id="wm-panel-title-text">Manage Workouts</div>
-      <button class="back-arrow-btn" onclick="closeFullscreenPanel('panel-workout-manager')">&lt;</button>
     </div>
+    
     <div id="panel-wm-dashboard-view" style="display:flex; flex-direction:column; gap:16px;">
       <div style="display:flex; flex-direction:column; gap:10px;" id="panel-wm-routines-container"></div>
       <div style="border-top:1px solid var(--bg3); padding-top:16px; margin-top:8px;">
         <div class="field">
-          <label>Create Custom Workout Program Name</label>
-          <input type="text" id="panel-wm-new-name-field" placeholder="e.g. Push B, Pull Heavy">
+          <label>Workout Variant Name</label>
+          <input type="text" id="panel-wm-new-name-field" placeholder="e.g. Push B, Leg Heavy">
         </div>
         <button class="btn btn-accent btn-sm" style="width:100%; margin-top:10px; padding:12px 14px;" onclick="createNewWorkoutProgramFromFullscreenHub()">+ Add Workout</button>
       </div>
     </div>
+
     <div id="panel-wm-editing-view" style="display:none; flex-direction:column; gap:14px;">
       <div id="fullscreen-cz-exercises-list-wrapper" style="display:flex; flex-direction:column; gap:12px;"></div>
       <button class="btn btn-secondary btn-sm" onclick="openExerciseCatalogSelectorFullscreenPanel()">+ Add an Exercise</button>
@@ -304,16 +308,20 @@
 
   <div id="panel-exercise-catalogue-picker" class="full-panel" style="z-index:600;">
     <div class="panel-header">
+      <button class="back-circle-btn" onclick="closeFullscreenPanel('panel-exercise-catalogue-picker')">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
       <div class="panel-title">Select Exercise</div>
-      <button class="back-arrow-btn" onclick="closeFullscreenPanel('panel-exercise-catalogue-picker')">&lt;</button>
     </div>
     <div id="fullscreen-catalogue-tree-nodes" style="display:flex; flex-direction:column; gap:4px;"></div>
   </div>
 
   <div id="panel-schedule-builder" class="full-panel">
     <div class="panel-header">
+      <button class="back-circle-btn" onclick="closeFullscreenPanel('panel-schedule-builder')">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
       <div class="panel-title">Rotation Loop</div>
-      <button class="back-arrow-btn" onclick="closeFullscreenPanel('panel-schedule-builder')">&lt;</button>
     </div>
     <div class="field" style="margin-bottom:16px;">
       <label>Sequence Days Number</label>
@@ -347,10 +355,10 @@
   <button class="btn btn-ghost" style="margin-top: 12px;" onclick="endWorkoutEarly()">End Workout</button>
 </div>
 
-<div id="modal-overlay" class="modal-overlay">
+<div id="modal-overlay" class="modal-overlay" onclick="handleModalOverlayOutsideTapDismissal(event)">
   <div class="modal" id="swipeable-modal-node">
-    <div class="modal-handle" id="modal-drag-handle-bar"></div>
-    <div id="modal-body"></div>
+    <div class="modal-handle-bar" id="modal-drag-handle-bar"></div>
+    <div id="modal-body" style="padding-top: 4px;"></div>
   </div>
 </div>
 
