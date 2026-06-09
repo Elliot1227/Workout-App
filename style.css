@@ -7,11 +7,11 @@
 
 :root {
   --bg: #0a0a0a;
-  --bg2: #1c1c1e; /* Lighter gray for better card and panel contrast */
+  --bg2: #1c1c1e;
   --bg3: #2c2c2e;
   --bg4: #3a3a3c;
   --bg5: #48484a;
-  --border: transparent; /* Removed harsh outlines */
+  --border: transparent;
   --border2: #3a3a3c;
   --text: #ffffff;
   --text2: #aeaea3;
@@ -52,18 +52,25 @@ html, body {
   background: var(--bg);
 }
 
-/* ── SCREENS & PANELS ── */
-.screen {
-  display: none;
+/* ── SWIPE NAV CONTENT SLIDER SYSTEM ── */
+.screen-container {
+  display: flex;
   flex: 1;
+  width: 400%; /* 4 Screens total */
+  height: 100%;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.screen {
+  width: 25%;
+  height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
+  flex-shrink: 0;
   padding: 0 0 calc(80px + var(--safe-bottom));
 }
-.screen.active {
-  display: flex;
-  flex-direction: column;
-}
+
 .screen-inner {
   padding: 20px 16px;
   display: flex;
@@ -72,7 +79,7 @@ html, body {
   flex: 1;
 }
 
-/* Full-Screen Workspace Panel Layer */
+/* ── FULL SCREEN COMPACT SURFACE OVERLAYS ── */
 .full-panel {
   position: fixed;
   inset: 0;
@@ -101,7 +108,21 @@ html, body {
   letter-spacing: -0.4px;
 }
 
-/* ── NAV BAR ── */
+/* Back Arrow Icon */
+.back-arrow-btn {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+}
+
+/* ── NAV BAR FOOTER RAIL ── */
 .nav {
   position: fixed;
   bottom: 0;
@@ -138,12 +159,12 @@ html, body {
 .page-title { font-size: 28px; font-weight: 800; letter-spacing: -.6px; padding-top: calc(var(--safe-top) + 8px); }
 .section-label { font-size: 12px; color: var(--text2); text-transform: uppercase; letter-spacing: 1.2px; font-weight: 700; margin-left: 4px; }
 
-/* ── CARDS & BOXES ── */
+/* ── BOX SECTIONS ── */
 .card { background: var(--bg2); border-radius: var(--radius); padding: 18px; }
 .card-sm { background: var(--bg3); border-radius: var(--radius-sm); padding: 14px; }
 
-/* ── BUTTONS ── */
-.btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 20px; border-radius: var(--radius-sm); font-size: 16px; font-weight: 600; font-family: inherit; cursor: pointer; border: none; width: 100%; text-decoration: none; }
+/* ── UTILITY ACTION BUTTONS ── */
+.btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 20px; border-radius: var(--radius-sm); font-size: 16px; font-weight: 600; font-family: inherit; cursor: pointer; border: none; width: 100%; }
 .btn:active { transform: scale(.97); }
 .btn-accent { background: var(--accent); color: #000; }
 .btn-secondary { background: var(--bg3); color: var(--text); }
@@ -151,7 +172,7 @@ html, body {
 .btn-danger { background: transparent; color: var(--red); border: 1.5px solid color-mix(in srgb, var(--red) 25%, transparent); }
 .btn-sm { padding: 8px 14px; font-size: 13px; border-radius: var(--radius-xs); width: auto; }
 
-/* ── INPUTS ── */
+/* ── CONTROL FIELDS ── */
 .field { display: flex; flex-direction: column; gap: 8px; width: 100%; }
 .field label { font-size: 14px; color: var(--text); font-weight: 600; padding-left: 2px; }
 input[type=text], input[type=number], select { background: var(--bg3); border: 1.5px solid var(--bg4); color: var(--text); font-family: inherit; font-size: 16px; border-radius: var(--radius-sm); padding: 12px 14px; width: 100%; outline: none; }
@@ -179,14 +200,14 @@ input:focus, select:focus { border-color: var(--accent); }
 .workout-header { display: flex; align-items: center; justify-content: space-between; padding: calc(var(--safe-top) + 12px) 16px 12px; background: var(--bg2); border-bottom: 1px solid var(--bg3); flex-shrink: 0; }
 .workout-header-left { display: flex; flex-direction: column; }
 .workout-day-label { font-size: 11px; color: var(--accent); font-weight: 700; text-transform: uppercase; }
-.workout-timer { font-size: 22px; font-weight: 800; }
+.workout-timer { font-size: 22px; height: auto; font-weight: 800; }
 .workout-vol { text-align: right; }
 .workout-vol-num { font-size: 18px; font-weight: 700; }
 .workout-vol-lbl { font-size: 11px; color: var(--text2); }
 
 .exercise-area { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
 .ex-card { background: var(--bg2); padding: 16px; border-radius: var(--radius); display: flex; flex-direction: column; gap: 16px; }
-.ex-card-name { font-size: 22px; font-weight: 800; word-wrap: break-word; overflow-wrap: break-word; }
+.ex-card-name { font-size: 22px; font-weight: 800; }
 .ex-card-meta { font-size: 13px; color: var(--text2); margin-top: 4px; }
 
 .set-dash-container { display: flex; gap: 6px; width: 100%; }
@@ -215,12 +236,12 @@ input:focus, select:focus { border-color: var(--accent); }
 
 .ex-footer { display: flex; gap: 10px; }
 
-/* ── REST SCREEN OVERLAY ── */
-#rest-overlay { display: none; position: fixed; inset: 0; background: var(--bg); z-index: 600; flex-direction: column; align-items: center; justify-content: center; max-width: 430px; margin: 0 auto; padding: 40px 32px; }
+/* ── TIMING OVERLAY INTERFACE ── */
+#rest-overlay { display: none; position: fixed; inset: 0; background: var(--bg); z-index: 600; flex-direction: column; align-items: center; justify-content: center; gap: 0; max-width: 430px; margin: 0 auto; padding: 40px 32px; }
 #rest-overlay.show { display: flex; }
-.rest-type { font-size: 12px; color: var(--text3); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; margin-bottom: 12px; }
-.rest-label { font-size: 17px; color: var(--text2); margin-bottom: 16px; }
-.rest-ring { position: relative; width: 180px; height: 180px; margin-bottom: 24px; }
+.rest-type { font-size: 12px; color: var(--text3); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; margin-bottom: 8px; }
+.rest-label { font-size: 17px; color: var(--text2); margin-bottom: 8px; }
+.rest-ring { position: relative; width: 180px; height: 180px; margin-bottom: 16px; }
 .rest-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
 .rest-ring-bg { stroke: var(--bg4); stroke-width: 8; fill: none; }
 .rest-ring-fill { stroke: var(--accent); stroke-width: 8; fill: none; stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
@@ -229,14 +250,16 @@ input:focus, select:focus { border-color: var(--accent); }
 .rest-unit { font-size: 13px; color: var(--text2); }
 .rest-next { font-size: 15px; color: var(--text2); margin-bottom: 24px; text-align: center; padding: 0 10px; min-height: 20px; }
 
-.snooze-container { display: flex; gap: 10px; width: 100%; max-width: 280px; margin-bottom: 24px; }
+/* Balanced Equal-Width Snooze Layout Row Buttons */
+.snooze-container { display: flex; gap: 12px; width: 100%; max-width: 320px; margin-bottom: 24px; }
+.snooze-container .btn { padding: 12px; font-size: 15px; border-radius: var(--radius-sm); flex: 1; width: 50%; }
 
 .completed-ex { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg3); border-radius: var(--radius-sm); }
 .completed-info { flex: 1; min-width: 0; }
 .completed-name { font-size: 14px; font-weight: 600; }
 .completed-meta { font-size: 12px; color: var(--text2); }
 
-/* ── CALENDAR ── */
+/* ── HISTORICAL GRID ── */
 .cal-month-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
 .cal-month-nav h2 { font-size: 18px; font-weight: 700; }
 .cal-nav-btn { width: 36px; height: 36px; background: var(--bg3); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text); }
@@ -253,7 +276,6 @@ input:focus, select:focus { border-color: var(--accent); }
 .cal-day-dot { width: 5px; height: 5px; border-radius: 50%; }
 .cal-day.rest-day { opacity: 0.35; color: var(--text3); }
 
-/* History Accordions */
 .history-summary-item { background: var(--bg2); border-radius: var(--radius-sm); margin-bottom: 8px; overflow: hidden; }
 .history-summary-header { padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 600; font-size: 15px; }
 .history-summary-header:active { background: var(--bg3); }
@@ -271,63 +293,100 @@ input:focus, select:focus { border-color: var(--accent); }
 .stat-lbl { font-size: 12px; color: var(--text2); margin-top: 2px; }
 .vol-bars { display: flex; align-items: flex-end; gap: 6px; height: 75px; margin-top: 12px; }
 .vol-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.vol-bar-inner { width: 100%; border-radius: 4px 4px 0 0; background: var(--bg4); min-height: 2px; }
+.vol-bar-inner { width: 100%; border-radius: 4px 4px 0 0; background: var(--bg4); min-height: 2px; transition: height .3s; }
 .vol-bar-inner.filled { background: var(--accent); }
 .vol-bar-lbl { font-size: 9px; color: var(--text3); font-weight: 700; }
 
-/* ── SETTINGS SCREEN CLEANUP ── */
+/* ── SETTINGS ROUNDING & OVERLAY CORRECTIONS ── */
 .settings-section { display: flex; flex-direction: column; gap: 0; margin-bottom: 24px; width: 100%; }
 .settings-section-title { font-size: 12px; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; padding: 0 4px; margin-bottom: 8px; }
-.settings-row { display: flex; align-items: center; justify-content: space-between; padding: 16px; background: var(--bg2); cursor: pointer; width: 100%; }
 
-/* Explicit top/bottom rounding fixes for whole layout boxes */
-.settings-row:first-of-type { border-top-left-radius: var(--radius) !important; border-top-right-radius: var(--radius) !important; }
-.settings-row:last-of-type { border-bottom-left-radius: var(--radius) !important; border-bottom-right-radius: var(--radius) !important; }
-.settings-row:only-of-type { border-radius: var(--radius) !important; }
+.settings-row { 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  padding: 16px; 
+  background: var(--bg2); 
+  cursor: pointer; 
+  width: 100%; 
+  border-radius: 0 !important; /* Eliminate internal layout clipping bugs */
+}
+/* Explicitly restrict top and bottom corner definitions directly onto structural index rows */
+.settings-section .settings-row:first-of-type { border-top-left-radius: var(--radius) !important; border-top-right-radius: var(--radius) !important; }
+.settings-section .settings-row:last-of-type { border-bottom-left-radius: var(--radius) !important; border-bottom-right-radius: var(--radius) !important; }
+.settings-section .settings-row:only-of-type { border-radius: var(--radius) !important; }
 .settings-row:not(:first-of-type) { border-top: 1px solid var(--bg3); }
 .settings-row:active { background: var(--bg3); }
+
 .settings-row-left { display: flex; flex-direction: column; gap: 4px; flex: 1; padding-left: 2px; }
 .settings-row-label { font-size: 15px; font-weight: 600; color: var(--text); }
 .settings-row-value { font-size: 13px; color: var(--text2); line-height: 1.3; }
 .settings-row-right { color: var(--text3); display: flex; align-items: center; }
 .settings-row-right svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2.5; }
 
-/* ── SCHEDULE BUILDER INTERFACE ALIGNMENTS ── */
-.schedule-builder-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--bg2);
-  padding: 14px 16px;
-  border-radius: var(--radius-sm);
-  margin-bottom: 10px;
+/* ── EQUAL LENGTH METRIC PERIOD TAB HEADERS ── */
+.muscle-period-tabs { display: flex; gap: 8px; width: 100%; }
+.muscle-period-tabs .period-tab { 
+  flex: 1; 
+  width: 33.33%; 
+  padding: 12px 0; 
+  text-align: center; 
+  font-size: 13px; 
+  font-weight: 700; 
+  border-radius: var(--radius-sm); 
+  background: var(--bg2); 
+  color: var(--text2); 
+  border: none; 
 }
-.schedule-builder-row span {
-  font-weight: 600;
-  font-size: 15px;
-  padding-left: 4px; /* Fix edge collision text bug */
+.muscle-period-tabs .period-tab.active { background: var(--bg4); color: var(--text); }
+
+/* ── ROUTINE MANAGER FORM RE-ALIGNMENTS ── */
+.schedule-builder-row { display: flex; justify-content: space-between; align-items: center; background: var(--bg2); padding: 14px 16px; border-radius: var(--radius-sm); margin-bottom: 10px; }
+.schedule-builder-row span { font-weight: 600; font-size: 15px; padding-left: 4px; }
+.schedule-builder-row select { width: 150px; padding: 8px 10px; font-size: 14px; }
+
+/* Dynamic Full Screen Slip Modal Backdrops Overlay */
+.modal-overlay { 
+  position: fixed; 
+  inset: 0; 
+  background: rgba(0,0,0,0.85); 
+  z-index: 400; 
+  display: none; 
+  flex-direction: column;
+  align-items: center; 
+  justify-content: flex-end; 
+  backdrop-filter: blur(8px); 
+  -webkit-backdrop-filter: blur(8px); 
 }
-.schedule-builder-row select {
-  width: 150px;
-  padding: 8px 10px;
-  font-size: 14px;
+.modal { 
+  background: var(--bg2); 
+  border-radius: 24px 24px 0 0; 
+  width: 100%; 
+  max-width: 430px; 
+  padding: 20px 20px calc(24px + var(--safe-bottom)); 
+  max-height: 85vh; 
+  overflow-y: auto; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 16px; 
+  transform: translateY(0);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ── BOTTOM SHEET MODAL (FALLBACK ONLY) ── */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 400; display: none; align-items: flex-end; justify-content: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-.modal { background: var(--bg2); border-radius: 24px 24px 0 0; width: 100%; max-width: 430px; padding: 20px 20px calc(24px + var(--safe-bottom)); max-height: 85vh; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
-.modal-handle { width: 36px; height: 4px; background: var(--bg4); border-radius: 2px; margin: 0 auto 4px; }
-.modal-title { font-size: 20px; font-weight: 800; }
+.custom-workout-row { background: var(--bg2); padding: 16px; border-radius: var(--radius); margin-bottom: 12px; display: flex; flex-direction: column; gap: 12px; }
+.custom-workout-row-header { display: flex; justify-content: space-between; align-items: center; }
+.custom-workout-grid-inputs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; text-align: center; align-items: center; }
 
-.muscle-legend { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-.muscle-pill { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 12px; font-size: 13px; font-weight: 600; }
-.muscle-pill-dot { width: 8px; height: 8px; border-radius: 50%; }
-
-.custom-workout-row { display: flex; flex-direction: column; gap: 10px; background: var(--bg2); padding: 16px; border-radius: var(--radius); margin-bottom: 12px; }
-.custom-workout-row-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-.custom-workout-grid-inputs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-.custom-workout-grid-inputs input { padding: 10px; font-size: 15px; text-align: center; }
+/* Title Case Formatting Layout Parameters for customizer inputs */
+.custom-workout-grid-inputs div { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.custom-workout-grid-inputs span { font-size: 12px; color: var(--text2); font-weight: 600; text-transform: none !important; }
+.custom-workout-grid-inputs input { padding: 10px; font-size: 16px; text-align: center; font-weight: 700; width: 100%; max-width: 90px; }
 
 .exercise-group-title { font-size: 13px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 16px; border-bottom: 1px solid var(--bg4); padding-bottom: 6px; padding-left: 2px; }
 .modal-selection-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 6px; border-bottom: 1px solid var(--bg3); cursor: pointer; font-size: 15px; }
 .modal-selection-row:active { background: var(--bg3); }
+
+/* ── PRODUCTION VECTOR GRAPHICS ANATOMY ── */
+.muscle-svg-wrap { position: relative; max-width: 240px; margin: 0 auto; display: block !important; overflow: visible; }
+.muscle-svg-wrap svg { width: 100%; height: auto; display: block; overflow: visible; }
+.muscle-svg-wrap path { transition: fill 0.2s ease, opacity 0.2s ease; stroke: #141416; stroke-width: 0.4px; }
