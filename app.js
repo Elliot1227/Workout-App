@@ -1,7 +1,3 @@
-// ═══════════════════════════════════════════════════════════════════
-// WORKOUT TRACKER — INTERACTIVE SPRING SWIPING TOUCH ENGINE REWRITE
-// ═══════════════════════════════════════════════════════════════════
-
 const DB = {
   get(k) { try { return JSON.parse(localStorage.getItem('il_' + k)); } catch { return null; } },
   set(k, v) { localStorage.setItem('il_' + k, JSON.stringify(v)); return v; },
@@ -19,7 +15,7 @@ const ACCENT_PALETTE = {
 const DEFAULT_SETTINGS = {
   pattern: ['Push A', 'Pull A', 'Legs A', 'rest'], 
   blockedWeekdays: [], 
-  equipment: ['barbell', 'dumbbells', 'cables', 'machines'],
+  equipment: ['barbell', 'dumbbells', 'cables', 'machines', 'kettlebells', 'squat_rack', 'bench', 'ez_bar', 'dip_rack', 'bike', 'bands'],
   level: 'intermediate',
   setRestSeconds: 90,
   exerciseRestSeconds: 180,
@@ -28,60 +24,59 @@ const DEFAULT_SETTINGS = {
   startDate: new Date().toISOString().split('T')[0]
 };
 
-// ── VULOVIX GITHUB SPECIFICATION DEFINITIONS API COMPLIANT MAPPINGS ──
-const MUSCLE_LABELS = {
-  chests: 'Chest', lats: 'Lats', deltoids: 'Shoulders', biceps: 'Biceps', triceps: 'Triceps', trapezius: 'Traps', abs: 'Core', obliques: 'Core', quadriceps: 'Quads', hamstrings: 'Hamstrings', gluteal: 'Glutes', calves: 'Calves', forearms: 'Forearms'
-};
+const EQUIPMENT_LIST = ['barbell', 'dumbbells', 'cables', 'machines', 'kettlebells', 'squat_rack', 'bench', 'ez_bar', 'dip_rack', 'bike', 'bands'];
 
-const MUSCLE_COLOR = {
-  'Chest':'#ff6b6b','Lats':'#4d9fff','Shoulders':'#ffa94d','Biceps':'#3ddc84','Triceps':'#cc44ff','Traps':'#74c0fc','Quads':'#ffe066','Hamstrings':'#63e6be','Glutes':'#ff8c42','Calves':'#a9e34b','Core':'#748ffc','Forearms':'#e599f7'
-};
+const MUSCLE_LABELS = { chest: 'Chest', lats: 'Lats', deltoids: 'Shoulders', biceps: 'Biceps', triceps: 'Triceps', trapezius: 'Traps', abs: 'Core', quadriceps: 'Quads', hamstrings: 'Hamstrings', gluteal: 'Glutes', calves: 'Calves', forearms: 'Forearms' };
+const MUSCLE_COLOR = { 'Chest':'#ff6b6b','Lats':'#4d9fff','Shoulders':'#ffa94d','Biceps':'#3ddc84','Triceps':'#cc44ff','Traps':'#74c0fc','Quads':'#ffe066','Hamstrings':'#63e6be','Glutes':'#ff8c42','Calves':'#a9e34b','Core':'#748ffc','Forearms':'#e599f7' };
 
 const MASTER_EXERCISES_CATALOGUE = [
-  { id: 'bench_press', name: 'Barbell Bench Press', muscle: 'chests', sets: 3, reps: [6, 8], weight: 135, equipment: 'barbell' },
-  { id: 'incline_db_press', name: 'Incline Dumbbell Press', muscle: 'chests', sets: 3, reps: [8, 10], weight: 50, equipment: 'dumbbells' },
-  { id: 'flat_db_press', name: 'Flat Dumbbell Press', muscle: 'chests', sets: 3, reps: [8, 10], weight: 55, equipment: 'dumbbells' },
-  { id: 'dips_rack', name: 'Dip Rack Chest Dips', muscle: 'chests', sets: 3, reps: [8, 10], weight: 0, equipment: 'machines' },
-  { id: 'band_fly', name: 'Resistance Band Fly', muscle: 'chests', sets: 3, reps: [12, 15], weight: 15, equipment: 'bands' },
-  { id: 'deadlift', name: 'Barbell Deadlift', muscle: 'lats', sets: 3, reps: [5, 5], weight: 185, equipment: 'barbell' },
-  { id: 'lat_pulldown', name: 'Cable Vertical Lat Pulldown', muscle: 'lats', sets: 3, reps: [8, 12], weight: 100, equipment: 'cables' },
-  { id: 'barbell_row', name: 'Bent Over Barbell Row', muscle: 'lats', sets: 3, reps: [6, 8], weight: 135, equipment: 'barbell' },
-  { id: 'db_row', name: 'One Arm Dumbbell Row', muscle: 'lats', sets: 3, reps: [8, 12], weight: 45, equipment: 'dumbbells' },
-  { id: 'kettlebell_swings', name: 'Kettlebell Swings', muscle: 'lats', sets: 3, reps: [15, 20], weight: 35, equipment: 'kettlebells' },
+  // Push
+  { id: 'bench_press', name: 'Barbell Bench Press', muscle: 'chest', sets: 3, reps: [6, 8], weight: 135, equipment: 'bench' },
+  { id: 'incline_db_press', name: 'Incline Dumbbell Press', muscle: 'chest', sets: 3, reps: [8, 10], weight: 50, equipment: 'dumbbells' },
+  { id: 'dips_rack', name: 'Dip Rack Chest Dips', muscle: 'chest', sets: 3, reps: [8, 10], weight: 0, equipment: 'dip_rack' },
+  { id: 'band_fly', name: 'Resistance Band Fly', muscle: 'chest', sets: 3, reps: [12, 15], weight: 15, equipment: 'bands' },
   { id: 'ohp', name: 'Barbell Overhead Press', muscle: 'deltoids', sets: 3, reps: [6, 8], weight: 95, equipment: 'barbell' },
   { id: 'db_shoulder_press', name: 'Dumbbell Shoulder Press', muscle: 'deltoids', sets: 3, reps: [8, 10], weight: 40, equipment: 'dumbbells' },
   { id: 'lateral_raise', name: 'Dumbbell Lateral Raise', muscle: 'deltoids', sets: 4, reps: [12, 15], weight: 15, equipment: 'dumbbells' },
+  { id: 'tricep_pushdown', name: 'Cable Tricep Pushdown (To Ground)', muscle: 'triceps', sets: 3, reps: [8, 12], weight: 50, equipment: 'cables' },
+  { id: 'skull_crusher', name: 'EZ Bar Skull Crusher', muscle: 'triceps', sets: 3, reps: [8, 12], weight: 45, equipment: 'ez_bar' },
+  // Pull
+  { id: 'deadlift', name: 'Barbell Deadlift', muscle: 'lats', sets: 3, reps: [5, 5], weight: 185, equipment: 'barbell' },
+  { id: 'lat_pulldown', name: 'Cable Lat Pulldown (To Ground)', muscle: 'lats', sets: 3, reps: [8, 12], weight: 100, equipment: 'cables' },
+  { id: 'barbell_row', name: 'Bent Over Barbell Row', muscle: 'lats', sets: 3, reps: [6, 8], weight: 135, equipment: 'barbell' },
+  { id: 'db_row', name: 'One Arm Dumbbell Row', muscle: 'lats', sets: 3, reps: [8, 12], weight: 45, equipment: 'dumbbells' },
+  { id: 'kettlebell_swings', name: 'Kettlebell Swings', muscle: 'gluteal', sets: 3, reps: [15, 20], weight: 35, equipment: 'kettlebells' },
   { id: 'band_facepull', name: 'Resistance Band Facepull', muscle: 'deltoids', sets: 3, reps: [15, 20], weight: 10, equipment: 'bands' },
   { id: 'barbell_curl', name: 'Barbell Curl', muscle: 'biceps', sets: 3, reps: [8, 12], weight: 65, equipment: 'barbell' },
-  { id: 'ez_bar_curl', name: 'EZ Curl Bar Curl', muscle: 'biceps', sets: 3, reps: [8, 12], weight: 55, equipment: 'barbell' },
+  { id: 'ez_bar_curl', name: 'EZ Curl Bar Curl', muscle: 'biceps', sets: 3, reps: [8, 12], weight: 55, equipment: 'ez_bar' },
   { id: 'db_hammer_curl', name: 'Dumbbell Hammer Curl', muscle: 'biceps', sets: 3, reps: [10, 12], weight: 25, equipment: 'dumbbells' },
-  { id: 'tricep_pushdown', name: 'Cable Vertical Tricep Pushdown', muscle: 'triceps', sets: 3, reps: [8, 12], weight: 50, equipment: 'cables' },
-  { id: 'skull_crusher', name: 'EZ Bar Skull Crusher', muscle: 'triceps', sets: 3, reps: [8, 12], weight: 45, equipment: 'barbell' },
-  { id: 'back_squat', name: 'Barbell Back Squat', muscle: 'quadriceps', sets: 3, reps: [6, 8], weight: 155, equipment: 'barbell' },
+  // Legs
+  { id: 'back_squat', name: 'Barbell Back Squat', muscle: 'quadriceps', sets: 3, reps: [6, 8], weight: 155, equipment: 'squat_rack' },
   { id: 'goblet_squat', name: 'Kettlebell Goblet Squat', muscle: 'quadriceps', sets: 3, reps: [10, 12], weight: 45, equipment: 'kettlebells' },
-  { id: 'rdl', name: 'Barbell Romanian Deadlift', muscle: 'hamstrings', sets: 3, reps: [8, 10], weight: 135, equipment: 'barbell' },
-  { id: 'hip_thrust', name: 'Barbell Hip Thrust', muscle: 'gluteal', sets: 3, reps: [8, 12], weight: 185, equipment: 'barbell' },
-  { id: 'calf_raise', name: 'Dumbbell Calf Raise', muscle: 'calves', sets: 4, reps: [12, 15], weight: 35, equipment: 'dumbbells' }
+  { id: 'rdl', name: 'Barbell RDL', muscle: 'hamstrings', sets: 3, reps: [8, 10], weight: 135, equipment: 'barbell' },
+  { id: 'hip_thrust', name: 'Barbell Hip Thrust', muscle: 'gluteal', sets: 3, reps: [8, 12], weight: 185, equipment: 'bench' },
+  { id: 'calf_raise', name: 'Dumbbell Calf Raise', muscle: 'calves', sets: 4, reps: [12, 15], weight: 35, equipment: 'dumbbells' },
+  { id: 'stationary_bike', name: 'Stationary Bike (Mins)', muscle: 'quadriceps', sets: 1, reps: [15, 30], weight: 0, equipment: 'bike' }
 ];
 
 const BASE_SYSTEM_LIBRARY = {
   'Push A': [
-    { id: 'bench_press', name: 'Barbell Bench Press', muscles: ['chests'], sets: 3, reps: [6, 8] },
+    { id: 'bench_press', name: 'Barbell Bench Press', muscles: ['chest'], sets: 3, reps: [6, 8] },
     { id: 'ohp', name: 'Barbell Overhead Press', muscles: ['deltoids'], sets: 3, reps: [6, 8] },
-    { id: 'incline_db_press', name: 'Incline Dumbbell Press', muscles: ['chests'], sets: 3, reps: [8, 10] },
+    { id: 'incline_db_press', name: 'Incline Dumbbell Press', muscles: ['chest'], sets: 3, reps: [8, 10] },
     { id: 'lateral_raise', name: 'Dumbbell Lateral Raise', muscles: ['deltoids'], sets: 4, reps: [12, 15] },
-    { id: 'tricep_pushdown', name: 'Cable Vertical Tricep Pushdown', muscles: ['triceps'], sets: 3, reps: [8, 12] }
+    { id: 'tricep_pushdown', name: 'Cable Tricep Pushdown', muscles: ['triceps'], sets: 3, reps: [8, 12] }
   ],
   'Pull A': [
     { id: 'barbell_row', name: 'Bent Over Barbell Row', muscles: ['lats'], sets: 3, reps: [6, 8] },
-    { id: 'lat_pulldown', name: 'Cable Vertical Lat Pulldown', muscles: ['lats'], sets: 3, reps: [8, 12] },
+    { id: 'lat_pulldown', name: 'Cable Lat Pulldown', muscles: ['lats'], sets: 3, reps: [8, 12] },
     { id: 'db_row', name: 'One Arm Dumbbell Row', muscles: ['lats'], sets: 3, reps: [8, 12] },
     { id: 'ez_bar_curl', name: 'EZ Curl Bar Curl', muscles: ['biceps'], sets: 3, reps: [8, 12] },
     { id: 'band_facepull', name: 'Resistance Band Facepull', muscles: ['deltoids'], sets: 3, reps: [15, 20] }
   ],
   'Legs A': [
     { id: 'back_squat', name: 'Barbell Back Squat', muscles: ['quadriceps'], sets: 3, reps: [6, 8] },
-    { id: 'rdl', name: 'Barbell Romanian Deadlift', muscles: ['hamstrings'], sets: 3, reps: [8, 10] },
+    { id: 'rdl', name: 'Barbell RDL', muscles: ['hamstrings'], sets: 3, reps: [8, 10] },
     { id: 'hip_thrust', name: 'Barbell Hip Thrust', muscles: ['gluteal'], sets: 3, reps: [8, 12] },
     { id: 'calf_raise', name: 'Dumbbell Calf Raise', muscles: ['calves'], sets: 4, reps: [12, 15] }
   ]
@@ -99,19 +94,12 @@ function applyAccentTheme() {
 function getPPLType(dateStr) {
   const s = getSettings(); const loopPattern = s.pattern; const blocks = s.blockedWeekdays || []; 
   const targetDate = new Date(dateStr + 'T12:00:00'); if (blocks.includes(targetDate.getDay())) return 'rest';
-
   let baseDate = new Date(s.startDate + 'T12:00:00'); let iter = new Date(baseDate); let patternIdx = 0;
   if (iter.getTime() <= targetDate.getTime()) {
-    while (iter.getTime() < targetDate.getTime()) {
-      if (!blocks.includes(iter.getDay())) { patternIdx = (patternIdx + 1) % loopPattern.length; }
-      iter.setDate(iter.getDate() + 1);
-    }
+    while (iter.getTime() < targetDate.getTime()) { if (!blocks.includes(iter.getDay())) { patternIdx = (patternIdx + 1) % loopPattern.length; } iter.setDate(iter.getDate() + 1); }
     if (blocks.includes(iter.getDay())) return 'rest'; return loopPattern[patternIdx];
   } else {
-    while (iter.getTime() > targetDate.getTime()) {
-      iter.setDate(iter.getDate() - 1);
-      if (!blocks.includes(iter.getDay())) { patternIdx = (patternIdx - 1 + loopPattern.length) % loopPattern.length; }
-    }
+    while (iter.getTime() > targetDate.getTime()) { iter.setDate(iter.getDate() - 1); if (!blocks.includes(iter.getDay())) { patternIdx = (patternIdx - 1 + loopPattern.length) % loopPattern.length; } }
     if (blocks.includes(iter.getDay())) return 'rest'; return loopPattern[patternIdx];
   }
 }
@@ -120,26 +108,21 @@ function getTodayType() { return getPPLType(new Date().toISOString().split('T')[
 
 function buildWorkout(type) {
   const customs = DB.get('customWorkouts') || {};
-  if (customs[type] && customs[type].length > 0) { return customs[type].map(ex => withSuggestion(ex)); }
-  if (BASE_SYSTEM_LIBRARY[type]) { return BASE_SYSTEM_LIBRARY[type].map(ex => withSuggestion(ex)); }
+  if (customs[type] && customs[type].length > 0) return customs[type].map(ex => withSuggestion(ex));
+  if (BASE_SYSTEM_LIBRARY[type]) return BASE_SYSTEM_LIBRARY[type].map(ex => withSuggestion(ex));
   return [];
 }
 
 function withSuggestion(ex) {
-  const s = getSettings(); const history = getExerciseHistory(ex.id || ex.name);
-  const unit = s.weightUnit || 'lbs'; const step = unit === 'lbs' ? 5 : 2.5;
-
+  const s = getSettings(); const history = getExerciseHistory(ex.id || ex.name); const step = s.weightUnit === 'lbs' ? 5 : 2.5;
   let catalogMatch = MASTER_EXERCISES_CATALOGUE.find(c => c.id === ex.id || c.name === ex.name);
   let suggestedWeight = catalogMatch ? catalogMatch.weight : 45;
   let suggestedSets = ex.sets || 3; let suggestedReps = ex.reps ? ex.reps[0] : 10; let isPR = false;
 
   if (history.length > 0) {
-    const last = history[history.length - 1];
-    const lastWeight = Math.max(...last.sets.map(st => st.weight || 0));
-    const lastReps = last.sets.map(st => st.reps || 0);
+    const last = history[history.length - 1]; const lastWeight = Math.max(...last.sets.map(st => st.weight || 0)); const lastReps = last.sets.map(st => st.reps || 0);
     const targetReps = ex.reps ? ex.reps[1] : 12;
-    if (lastReps.every(r => r >= targetReps)) { suggestedWeight = lastWeight + step; isPR = true; } 
-    else { suggestedWeight = lastWeight; }
+    if (lastReps.every(r => r >= targetReps)) { suggestedWeight = lastWeight + step; isPR = true; } else { suggestedWeight = lastWeight; }
     suggestedSets = last.sets.length; suggestedReps = Math.round(lastReps.reduce((a,b)=>a+b,0)/lastReps.length);
   }
   return { ...ex, suggestedWeight, suggestedSets, suggestedReps, isPR };
@@ -147,133 +130,93 @@ function withSuggestion(ex) {
 
 function getWorkouts() { return DB.get('workouts') || []; }
 function saveWorkout(w) { const workouts = getWorkouts(); workouts.push(w); DB.set('workouts', workouts); }
-function getExerciseHistory(idOrName) {
-  return getWorkouts().flatMap(w => (w.exercises || []).filter(e => e.id === idOrName || e.name === idOrName).map(e => ({ ...e, date: w.date })));
-}
+function getExerciseHistory(idOrName) { return getWorkouts().flatMap(w => (w.exercises || []).filter(e => e.id === idOrName || e.name === idOrName).map(e => ({ ...e, date: w.date }))); }
 
 let UI = { activeTabIndex: 0, screen: 'workout', calMonth: new Date(), muscleView: 'front', musclePeriod: 'week', workout: null, restTimer: null, restDurationTotal: 0, restTimeRemaining: 0, isSetViewCollapsed: true };
 
-// ── SWIPE AND NAVIGATION LINK SLIDER INDEXES ──
+// ── SWIPE LOGIC ──
 function handleBottomTabClick(tabIndex) {
-  UI.activeTabIndex = tabIndex; const screens = ['workout', 'calendar', 'muscles', 'settings'];
-  UI.screen = screens[tabIndex];
-
-  const wrapper = document.getElementById('main-swipe-wrapper');
-  wrapper.style.transform = `translateX(-${tabIndex * 25}%)`;
-
-  document.querySelectorAll('.nav-btn').forEach((b, idx) => {
-    if (idx === tabIndex) b.classList.add('active'); else b.classList.remove('active');
-  });
-
-  if (UI.screen === 'calendar') renderCalendar();
-  if (UI.screen === 'muscles') renderMuscleMap();
-  if (UI.screen === 'settings') renderSettings();
+  UI.activeTabIndex = tabIndex; const screens = ['workout', 'calendar', 'muscles', 'settings']; UI.screen = screens[tabIndex];
+  document.getElementById('main-swipe-wrapper').style.transform = `translateX(-${tabIndex * 25}%)`;
+  document.querySelectorAll('.nav-btn').forEach((b, idx) => { if (idx === tabIndex) b.classList.add('active'); else b.classList.remove('active'); });
+  if (UI.screen === 'calendar') renderCalendar(); if (UI.screen === 'muscles') renderMuscleMap(); if (UI.screen === 'settings') renderSettings();
 }
 
-let touchStartX = 0; let touchStartY = 0;
-let touchEndX = 0; let touchEndY = 0;
-
-document.addEventListener('touchstart', e => {
-  touchStartX = e.changedTouches[0].screenX; touchStartY = e.changedTouches[0].screenY;
-}, { passive: true });
-
-document.addEventListener('touchend', e => {
-  touchEndX = e.changedTouches[0].screenX; touchEndY = e.changedTouches[0].screenY;
-  handleSwipeGestureRouter();
-}, { passive: true });
+let touchStartX = 0; let touchStartY = 0; let touchEndX = 0; let touchEndY = 0;
+document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; touchStartY = e.changedTouches[0].screenY; }, { passive: true });
+document.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; touchEndY = e.changedTouches[0].screenY; handleSwipeGestureRouter(); }, { passive: true });
 
 function handleSwipeGestureRouter() {
   const deltaX = touchEndX - touchStartX; const deltaY = touchEndY - touchStartY;
   if (document.getElementById('active-workout').style.display === 'flex') return;
-  // Guard boundary to prevent tab swiping while drawer sheets are pulled into layout tracking views
   if (isAnyFullscreenPanelOrModalOpen()) return;
-
   if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 60) {
-    if (deltaX < 0 && UI.activeTabIndex < 3) { handleBottomTabClick(UI.activeTabIndex + 1); } 
-    else if (deltaX > 0 && UI.activeTabIndex > 0) { handleBottomTabClick(UI.activeTabIndex - 1); }
+    if (deltaX < 0 && UI.activeTabIndex < 3) handleBottomTabClick(UI.activeTabIndex + 1);
+    else if (deltaX > 0 && UI.activeTabIndex > 0) handleBottomTabClick(UI.activeTabIndex - 1);
   }
 }
 
 function isAnyFullscreenPanelOrModalOpen() {
   if (document.getElementById('modal-overlay').style.display === 'flex') return true;
-  const panels = ['panel-workout-manager', 'panel-exercise-catalogue-picker', 'panel-schedule-builder'];
-  return panels.some(p => document.getElementById(p).style.display === 'flex');
+  return ['panel-workout-manager', 'panel-exercise-catalogue-picker', 'panel-schedule-builder', 'rest-overlay'].some(p => {
+    const el = document.getElementById(p); return el && el.classList.contains('active');
+  });
 }
 
-// ── FLUID 1:1 INTERACTIVE SHEET INTERFACING TOUCH SYSTEM ──
-let activeTrackingSheetNode = null;
-let sheetTouchStartY = 0;
-let sheetCurrentTransformY = 0;
-
+// ── FLUID PANEL GESTURES ──
 function wireFluidInteractiveSheetGestures(triggerId, containerId, isModal = false) {
-  const trigger = document.getElementById(triggerId);
-  const container = document.getElementById(containerId);
+  const trigger = document.getElementById(triggerId); const container = document.getElementById(containerId);
   if (!trigger || !container) return;
+  let activeTracking = false; let startY = 0; let currY = 0;
 
-  trigger.addEventListener('touchstart', e => {
-    activeTrackingSheetNode = container;
-    sheetTouchStartY = e.touches[0].clientY;
-    container.style.transition = 'none'; // Unhook transition timing engines for true real-time response
-  }, { passive: true });
-
+  trigger.addEventListener('touchstart', e => { activeTracking = true; startY = e.touches[0].clientY; container.style.transition = 'none'; }, { passive: true });
   document.addEventListener('touchmove', e => {
-    if (activeTrackingSheetNode !== container) return;
-    let currentY = e.touches[0].clientY;
-    let deltaY = currentY - sheetTouchStartY;
-
-    if (deltaY < 0) deltaY = 0; // Prevent upward over-stretching
-    sheetCurrentTransformY = deltaY;
+    if (!activeTracking) return;
+    currY = e.touches[0].clientY; let deltaY = currY - startY;
+    if (deltaY < 0) deltaY = 0;
     container.style.transform = `translateY(${deltaY}px)`;
   }, { passive: true });
-
-  document.addEventListener('touchend', () => {
-    if (activeTrackingSheetNode !== container) return;
-    activeTrackingSheetNode = null;
-    
+  document.addEventListener('touchend', e => {
+    if (!activeTracking) return; activeTracking = false;
     container.style.transition = 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
-    
-    // If pulled more than 120 pixels downwards, slide it off the screen
-    if (sheetCurrentTransformY > 120) {
-      if (isModal) closeModal(); else closeFullscreenPanel(containerId);
-    } else {
-      container.style.transform = 'translateY(0px)';
-    }
-    sheetCurrentTransformY = 0;
+    let deltaY = currY - startY;
+    if (deltaY > 120) { if (isModal) closeModal(); else closeFullscreenPanel(containerId); } 
+    else { container.style.transform = 'translateY(0)'; }
   }, { passive: true });
 }
 
-// ── ONBOARDING MATRIX ──
-function startOnboarding() { document.getElementById('onboarding').style.display = 'flex'; generatePatternSetup(4); generateOnboardColorPicker(); showOnboardStep(1); }
+// ── ONBOARDING ──
+let onboardData = { pattern: ['Push A','Pull A','Legs A','rest'], blockedWeekdays: [], equipment: EQUIPMENT_LIST, level: 'intermediate', accentTheme: 'green' };
+function startOnboarding() { document.getElementById('onboarding').style.display = 'flex'; generatePatternSetup(4); generateOnboardColorPicker(); renderEquipmentChips(); showOnboardStep(1); }
 function showOnboardStep(n) { document.querySelectorAll('.onboard-step').forEach(s => s.classList.remove('active')); document.getElementById('onboard-' + n).classList.add('active'); }
 
 function generatePatternSetup(len) {
   const container = document.getElementById('ob-pattern-slots-container'); container.innerHTML = '';
   for (let i = 0; i < parseInt(len); i++) {
     let dVal = 'rest'; if (i===0) dVal='Push A'; if (i===1) dVal='Pull A'; if (i===2) dVal='Legs A';
-    container.innerHTML += `
-      <div class="field">
-        <label>Slot #${i + 1}</label>
-        <select class="ob-pattern-slot-select" data-index="${i}">
-          <option value="Push A" ${dVal==='Push A'?'selected':''}>Push A</option>
-          <option value="Pull A" ${dVal==='Pull A'?'selected':''}>Pull A</option>
-          <option value="Legs A" ${dVal==='Legs A'?'selected':''}>Legs A</option>
-          <option value="rest" ${dVal==='rest'?'selected':''}>Rest</option>
-        </select>
-      </div>`;
+    container.innerHTML += `<div class="field"><label>Slot #${i + 1}</label><select class="ob-pattern-slot-select" data-index="${i}"><option value="Push A" ${dVal==='Push A'?'selected':''}>Push A</option><option value="Pull A" ${dVal==='Pull A'?'selected':''}>Pull A</option><option value="Legs A" ${dVal==='Legs A'?'selected':''}>Legs A</option><option value="rest" ${dVal==='rest'?'selected':''}>Rest</option></select></div>`;
   }
 }
-
 function generateOnboardColorPicker() {
   const grid = document.getElementById('ob-color-grid'); grid.innerHTML = '';
   Object.keys(ACCENT_PALETTE).forEach(k => {
     const dot = document.createElement('div'); dot.className = `color-dot ${k==='green'?'selected':''}`; dot.style.background = ACCENT_PALETTE[k].primary; dot.dataset.color = k;
-    dot.onclick = function() { document.querySelectorAll('#ob-color-grid .color-dot').forEach(d=>d.classList.remove('selected')); this.classList.add('selected'); onboardData.accentTheme=this.dataset.color; };
-    grid.appendChild(dot);
+    dot.onclick = function() { document.querySelectorAll('#ob-color-grid .color-dot').forEach(d=>d.classList.remove('selected')); this.classList.add('selected'); onboardData.accentTheme=this.dataset.color; }; grid.appendChild(dot);
   });
 }
-
+function renderEquipmentChips() {
+  const cont = document.getElementById('ob-equipment-container'); cont.innerHTML = '';
+  EQUIPMENT_LIST.forEach(eq => {
+    const name = eq.replace('_', ' ');
+    cont.innerHTML += `<div class="chip ob-eq-chip selected" data-eq="${eq}" onclick="this.classList.toggle('selected')" style="text-transform:capitalize;">${name}</div>`;
+  });
+}
 function onboardNext(n) {
-  if (n === 2) { onboardData.pattern = [...document.querySelectorAll('.ob-pattern-slot-select')].map(s => s.value); }
+  if (n === 1) { generatePatternSetup(document.getElementById('ob-pattern-length').value); }
+  if (n === 2) { 
+    onboardData.pattern = Array.from(document.querySelectorAll('.ob-pattern-slot-select')).map(s => s.value); 
+    if(onboardData.pattern.length === 0) { alert("Please select days."); return; }
+  }
   if (n === 3) { onboardData.blockedWeekdays = [...document.querySelectorAll('.ob-block-chip.selected')].map(c => parseInt(c.dataset.day)); }
   if (n === 4) { onboardData.equipment = [...document.querySelectorAll('.ob-eq-chip.selected')].map(c => c.dataset.eq); }
   if (n === 6) {
@@ -281,12 +224,12 @@ function onboardNext(n) {
     onboardData.exerciseRestSeconds = parseInt(document.getElementById('ob-ex-rest').value) || 180;
     onboardData.weightUnit = document.querySelector('.ob-unit-chip.selected')?.dataset.unit || 'lbs';
     saveSettings({ ...DEFAULT_SETTINGS, ...onboardData, startDate: new Date().toISOString().split('T')[0] });
-    document.getElementById('onboarding').style.display = 'none';
-    refreshAppStateLabels(); renderWorkoutScreen(); return;
+    document.getElementById('onboarding').style.display = 'none'; refreshAppStateLabels(); renderWorkoutScreen(); return;
   }
   showOnboardStep(n + 1);
 }
 
+// ── WORKOUT SCREEN ──
 function renderWorkoutScreen() {
   const type = getTodayType(); if (document.getElementById('active-workout').style.display === 'flex') return;
   const container = document.getElementById('workout-ready-content');
@@ -294,9 +237,7 @@ function renderWorkoutScreen() {
     container.innerHTML = `<button class="btn btn-secondary" onclick="forceStartWorkout('${type}')">Train Again</button>`; return;
   }
   if (type === 'rest') {
-    container.innerHTML = `
-      <select id="force-workout-selector" style="margin-bottom:12px; font-size:16px; color-scheme:dark;"></select>
-      <button class="btn btn-accent" onclick="forceStartWorkout(document.getElementById('force-workout-selector').value)">Start Selection</button>`;
+    container.innerHTML = `<select id="force-workout-selector" style="margin-bottom:12px; font-size:16px;"></select><button class="btn btn-accent" onclick="forceStartWorkout(document.getElementById('force-workout-selector').value)">Start Selection</button>`;
     populateWorkoutDropdown('force-workout-selector'); return;
   }
   container.innerHTML = `<div class="workout-day-badge">${type.toUpperCase()}</div><button class="btn btn-accent" onclick="startWorkout('${type}')">Start Workout</button>`;
@@ -318,10 +259,8 @@ function startWorkout(type) {
     setData: plan.map(ex => Array.from({length: ex.suggestedSets}, () => ({ weight: ex.suggestedWeight, reps: ex.suggestedReps, done: false }))),
     completedExercises: [], totalVolume: 0, setTimestamps: plan.map(ex => ({ startTime: Date.now(), durations: [], restDurations: [] }))
   };
-  document.getElementById('workout-ready').style.display = 'none';
-  document.getElementById('active-workout').style.display = 'flex';
-  UI.workout.timerInterval = setInterval(updateWorkoutTimer, 1000);
-  document.getElementById('aw-submit-set-btn').onclick = () => submitFocusedActiveSet();
+  document.getElementById('workout-ready').style.display = 'none'; document.getElementById('active-workout').style.display = 'flex';
+  UI.workout.timerInterval = setInterval(updateWorkoutTimer, 1000); document.getElementById('aw-submit-set-btn').onclick = () => submitFocusedActiveSet();
   UI.workout.setTimestamps[0].startTime = Date.now(); renderActiveExercise();
 }
 
@@ -422,32 +361,26 @@ function commitCurrentExercise() {
 function skipToNextExercise() { commitCurrentExercise(); const w = UI.workout; if (w.exIndex >= w.exercises.length - 1) { finishWorkout(); } else { w.exIndex++; w.setIndex = 0; renderActiveExercise(); } }
 
 function endWorkoutEarly() {
-  if (confirm('Exit and save progress completely?')) {
-    clearRestTimer();
-    if (UI.workout) {
-      clearInterval(UI.workout.timerInterval); const w = UI.workout; commitCurrentExercise();
-      const saved = {
-        id: w.date, date: w.date, type: w.type, duration: Math.floor((Date.now() - w.startTime) / 1000), exercises: w.completedExercises,
-        totalVolume: w.completedExercises.reduce((a,e) => a + e.sets.reduce((b,s)=>(b+(s.weight||0)*(s.reps||0)),0), 0)
-      };
-      saveWorkout(saved); UI.workout = null;
-    }
-    document.getElementById('rest-overlay').classList.remove('show');
-    document.getElementById('active-workout').style.display = 'none';
-    document.getElementById('workout-ready').style.display = 'flex';
-    renderWorkoutScreen();
+  if (confirm('End workout early? Progress will be saved.')) {
+    document.getElementById('rest-overlay').classList.remove('active');
+    setTimeout(() => { document.getElementById('rest-overlay').style.display = 'none'; }, 280);
+    finishWorkout();
   }
 }
 
 function finishWorkout() {
-  clearInterval(UI.workout.timerInterval); clearRestTimer(); const w = UI.workout; commitCurrentExercise();
-  if (w.completedExercises.length === 0) { UI.workout = null; renderWorkoutScreen(); return; }
-  const saved = {
-    id: w.date, date: w.date, type: w.type, duration: Math.floor((Date.now() - w.startTime) / 1000), exercises: w.completedExercises,
-    totalVolume: w.completedExercises.reduce((a,e) => a + e.sets.reduce((b,s)=>(b+(s.weight||0)*(s.reps||0)),0), 0)
-  };
-  saveWorkout(saved); UI.workout = null; document.getElementById('active-workout').style.display = 'none';
-  document.getElementById('workout-ready').style.display = 'flex'; renderWorkoutScreen();
+  if (UI.workout) {
+    clearInterval(UI.workout.timerInterval); clearRestTimer(); const w = UI.workout; commitCurrentExercise();
+    if (w.completedExercises.length > 0) {
+      const saved = {
+        id: w.date, date: w.date, type: w.type, duration: Math.floor((Date.now() - w.startTime) / 1000), exercises: w.completedExercises,
+        totalVolume: w.completedExercises.reduce((a,e) => a + e.sets.reduce((b,s)=>(b+(s.weight||0)*(s.reps||0)),0), 0)
+      };
+      saveWorkout(saved);
+    }
+    UI.workout = null;
+  }
+  document.getElementById('active-workout').style.display = 'none'; document.getElementById('workout-ready').style.display = 'flex'; renderWorkoutScreen();
 }
 
 function showRestScreen(type, nextExName, onDone) {
@@ -457,7 +390,10 @@ function showRestScreen(type, nextExName, onDone) {
   document.getElementById('rest-overlay-type').textContent = type === 'exercise' ? 'Exercise Rest' : 'Set Rest';
   document.getElementById('rest-overlay-label').textContent = 'Resting';
   document.getElementById('rest-overlay-next').innerHTML = nextExName ? `Next: <strong>${nextExName}</strong>` : '';
-  updateRestOverlayDisplay(); overlay.classList.add('show'); clearRestTimer();
+  updateRestOverlayDisplay(); 
+  overlay.style.display = 'flex';
+  setTimeout(() => { overlay.classList.add('active'); }, 10);
+  clearRestTimer();
   UI.restTimer = setInterval(() => { UI.restTimeRemaining--; updateRestOverlayDisplay(); if (UI.restTimeRemaining <= 0) { triggerRestEndExecution(); } }, 1000);
   document.getElementById('rest-skip-trigger').onclick = () => triggerRestEndExecution();
 }
@@ -471,7 +407,10 @@ function updateRestOverlayDisplay() {
 function snoozeRestTimer(seconds) { UI.restTimeRemaining += seconds; UI.restDurationTotal += seconds; updateRestOverlayDisplay(); }
 
 function triggerRestEndExecution() {
-  clearRestTimer(); document.getElementById('rest-overlay').classList.remove('show');
+  clearRestTimer(); 
+  const overlay = document.getElementById('rest-overlay');
+  overlay.classList.remove('active');
+  setTimeout(() => { overlay.style.display = 'none'; }, 280);
   if (UI.workout) {
     const totalRestTaken = Math.floor((Date.now() - UI.setRestMarkerStart) / 1000);
     const timeLog = UI.workout.setTimestamps[UI.workout.exIndex]; if (timeLog) { timeLog.restDurations.push(totalRestTaken); }
@@ -481,6 +420,7 @@ function triggerRestEndExecution() {
 
 function clearRestTimer() { if (UI.restTimer) { clearInterval(UI.restTimer); UI.restTimer = null; } }
 
+// ── CALENDAR ──
 function renderCalendar() {
   const m = UI.calMonth; const yr = m.getFullYear(), mo = m.getMonth();
   document.getElementById('cal-month-label').textContent = m.toLocaleDateString('en-US', {month:'long', year:'numeric'});
@@ -572,10 +512,9 @@ function renderHistoricalSummaryAccordion(w) {
   });
   root.scrollIntoView({ behavior: 'smooth' });
 }
-
 function toggleHistoricalSummaryAccordionNode(headerElement) { const content = headerElement.nextElementSibling; content.classList.toggle('open'); }
 
-// ── VULOVIX NATIVE API SPECIFICATION HIGH-FIDELITY VECTOR COMPONENT ──
+// ── VULOVIX NATIVE SVG DATA ENGINE ──
 function renderMuscleMap() {
   const freq = getMusclesWorked(UI.musclePeriod); const maxFreq = Math.max(...Object.values(freq), 1);
   document.getElementById('muscle-diagram').innerHTML = UI.muscleView === 'front' ? frontBodySVG(freq, maxFreq) : backBodySVG(freq, maxFreq);
@@ -606,13 +545,14 @@ function getMusclesWorked(period) {
 function muscleOpacity(freq, maxFreq, ids) { const t = ids.reduce((a,id)=>a+(freq[id]||0), 0); return t === 0 ? 0.08 : 0.25 + 0.75 * (t / (ids.length * maxFreq)); }
 function mColor(ids) { return MUSCLE_COLOR[MUSCLE_LABELS[ids[0]]] || '#333'; }
 
+// Full fidelity extracted Vulovix body-front mappings
 function frontBodySVG(freq, maxFreq) {
   const op = (ids) => muscleOpacity(freq, maxFreq, ids); const c = (ids) => mColor(ids);
   return `
     <svg viewBox="0 0 100 220" xmlns="http://www.w3.org/2000/svg">
       <path d="M44,14 c0,-6 12,-6 12,0 c0,5 -3,7 -6,9 c-3,-2 -6,-4 -6,-9 z" fill="#1e1e1e"/>
       <path d="M46,23 l8,0 l-2,5 l-4,0 z" fill="#2a2a2a"/>
-      <path id="chests" d="M49,30 c-3,0 -8,1 -12,4 c-1,4 -1,13 1,18 c4,0 9,-1 11,-4 z M51,30 c3,0 8,1 12,4 c1,4 1,13 -1,18 c-4,0 -9,-1 -11,-4 z" fill="${c(['chest'])}" opacity="${op(['chest'])}"/>
+      <path id="chest" d="M49,30 c-3,0 -8,1 -12,4 c-1,4 -1,13 1,18 c4,0 9,-1 11,-4 z M51,30 c3,0 8,1 12,4 c1,4 1,13 -1,18 c-4,0 -9,-1 -11,-4 z" fill="${c(['chest'])}" opacity="${op(['chest'])}"/>
       <path id="deltoids" d="M36,33 c-2,2 -4,6 -5,11 c2,3 5,4 7,1 c1,-4 0,-9 -2,-12 z M64,33 c2,2 4,6 5,11 c-2,3 -5,4 -7,1 c-1,-4 0,-9 2,-12 z" fill="${c(['deltoids'])}" opacity="${op(['deltoids'])}"/>
       <path id="biceps" d="M30,47 c-1,4 -1,11 1,15 c2,0 3,-4 3,-8 c0,-3 -1,-6 -4,-7 z M70,47 c1,4 1,11 -1,15 c-2,0 -3,-4 -3,-8 c0,-3 1,-6 4,-7 z" fill="${c(['biceps'])}" opacity="${op(['biceps'])}"/>
       <path id="forearms" d="M29,65 c-1,5 -3,13 0,19 c2,0 3,-6 3,-12 c0,-3 -1,-5 -3,-7 z M71,65 c1,5 3,13 0,19 c-2,0 -3,-6 -3,-12 c0,-3 1,-5 3,-7 z" fill="${c(['forearms'])}" opacity="${op(['forearms'])}"/>
@@ -638,15 +578,13 @@ function backBodySVG(freq, maxFreq) {
     </svg>`;
 }
 
-function openFullscreenPanel(panelId) {
-  const panel = document.getElementById(panelId); panel.style.display = 'flex';
-  setTimeout(() => panel.classList.add('active'), 10);
-}
-function closeFullscreenPanel(panelId) {
-  const panel = document.getElementById(panelId); panel.classList.remove('active');
-  setTimeout(() => panel.style.display = 'none', 280);
-}
+function setMusclePeriod(p) { UI.musclePeriod = p; document.querySelectorAll('.period-tab').forEach(t=>t.classList.remove('active')); document.getElementById('ptab-'+p).classList.add('active'); renderMuscleMap(); }
+function setMuscleView(v) { UI.muscleView = v; document.querySelectorAll('.muscle-tab').forEach(t=>t.classList.remove('active')); document.getElementById('mtab-'+v).classList.add('active'); renderMuscleMap(); }
 
+function openFullscreenPanel(panelId) { const panel = document.getElementById(panelId); panel.style.display = 'flex'; setTimeout(() => panel.classList.add('active'), 10); }
+function closeFullscreenPanel(panelId) { const panel = document.getElementById(panelId); panel.classList.remove('active'); setTimeout(() => panel.style.display = 'none', 280); }
+
+// ── SETTINGS ──
 function renderSettings() {
   const s = getSettings();
   document.getElementById('settings-content').innerHTML = `
@@ -672,36 +610,30 @@ function renderSettings() {
 }
 
 function editSetting(key) {
-  const s = getSettings(); const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const s = getSettings();
   if (key === 'color') {
-    showModal(`<div class="modal-title" style="padding-left: 2px;">Select Color</div><div class="color-picker-grid" id="settings-color-grid" style="margin-top: 14px;"></div><button class="btn btn-accent" style="margin-top:20px;" onclick="saveSettingsThemeColor()">Save</button>`);
+    showModal('Select Color', `<div class="color-picker-grid" id="settings-color-grid" style="margin-top: 14px;"></div><button class="btn btn-accent" style="margin-top:20px;" onclick="saveSettingsThemeColor()">Save</button>`);
     const grid = document.getElementById('settings-color-grid');
     Object.keys(ACCENT_PALETTE).forEach(k => {
       const dot = document.createElement('div'); dot.className = `color-dot ${s.accentTheme===k?'selected':''}`; dot.style.background = ACCENT_PALETTE[k].primary; dot.dataset.color = k;
       dot.onclick = function() { document.querySelectorAll('#settings-color-grid .color-dot').forEach(d=>d.classList.remove('selected')); this.classList.add('selected'); }; grid.appendChild(dot);
     });
   } else if (key === 'timers') {
-    showModal(`
-      <div class="modal-title">Rest Times</div>
+    showModal('Rest Times', `
       <div class="range-slider-wrap" style="margin-top: 12px;">
-        <div style="display:flex; justify-content:between; width:100%; align-items:center;">
-          <span style="font-size:14px; font-weight:600; flex:1;">Between Sets</span>
-          <span class="range-slider-value-display" id="lbl-slider-set">${s.setRestSeconds}s</span>
-        </div>
+        <div style="display:flex; justify-content:space-between;"><span style="font-size:14px; font-weight:600;">Between Sets</span><span class="range-slider-value-display" id="lbl-slider-set">${s.setRestSeconds}s</span></div>
         <input type="range" min="15" max="300" step="5" value="${s.setRestSeconds}" id="slide-set-rest" oninput="document.getElementById('lbl-slider-set').textContent=this.value+'s'">
       </div>
       <div class="range-slider-wrap" style="margin-top: 14px;">
-        <div style="display:flex; justify-content:between; width:100%; align-items:center;">
-          <span style="font-size:14px; font-weight:600; flex:1;">Between Exercises</span>
-          <span class="range-slider-value-display" id="lbl-slider-ex">${s.exerciseRestSeconds}s</span>
-        </div>
+        <div style="display:flex; justify-content:space-between;"><span style="font-size:14px; font-weight:600;">Between Exercises</span><span class="range-slider-value-display" id="lbl-slider-ex">${s.exerciseRestSeconds}s</span></div>
         <input type="range" min="30" max="600" step="5" value="${s.exerciseRestSeconds}" id="slide-ex-rest" oninput="document.getElementById('lbl-slider-ex').textContent=this.value+'s'">
       </div>
       <button class="btn btn-accent" style="margin-top:20px;" onclick="saveSettingsTimers()">Save</button>`);
   } else if (key === 'unit') {
-    showModal(`<div class="modal-title">Weight Unit</div><select id="edit-global-unit" style="margin-top:12px;"><option value="lbs" ${s.weightUnit==='lbs'?'selected':''}>lbs</option><option value="kg" ${s.weightUnit==='kg'?'selected':''}>kg</option></select><button class="btn btn-accent" style="margin-top:20px;" onclick="saveSettingsUnit()">Save</button>`);
+    showModal('Weight Unit', `<select id="edit-global-unit" style="margin-top:12px;"><option value="lbs" ${s.weightUnit==='lbs'?'selected':''}>lbs</option><option value="kg" ${s.weightUnit==='kg'?'selected':''}>kg</option></select><button class="btn btn-accent" style="margin-top:20px;" onclick="saveSettingsUnit()">Save</button>`);
   } else if (key === 'blocked') {
-    showModal(`<div class="modal-title">Blocked Days</div><div class="chip-group" style="margin-top:14px;">${days.map((d,i)=>`<div class="chip settings-block-chip ${s.blockedWeekdays.includes(i)?'selected':''}" data-day="${i}" onclick="this.classList.toggle('selected')">${d.slice(0,3)}</div>`).join('')}</div><button class="btn btn-accent" style="margin-top:20px;" onclick="saveSettingsBlockedDays()">Save</button>`);
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    showModal('Blocked Days', `<div class="chip-group" style="margin-top:14px;">${days.map((d,i)=>`<div class="chip settings-block-chip ${s.blockedWeekdays.includes(i)?'selected':''}" data-day="${i}" onclick="this.classList.toggle('selected')">${d.slice(0,3)}</div>`).join('')}</div><button class="btn btn-accent" style="margin-top:20px;" onclick="saveSettingsBlockedDays()">Save</button>`);
   }
 }
 
@@ -771,7 +703,7 @@ function renderFullscreenEditorRows() {
       <div class="custom-workout-grid-inputs">
         <div><span>Sets</span><input type="number" pattern="[0-9]*" inputmode="numeric" id="fcz-set-${idx}" value="${ex.sets || 3}" onchange="syncFullscreenEditorInputs(${idx})"></div>
         <div><span>Reps</span><input type="number" pattern="[0-9]*" inputmode="numeric" id="fcz-rep-${idx}" value="${ex.reps ? ex.reps[0] : 10}" onchange="syncFullscreenEditorInputs(${idx})"></div>
-        <div><span>Starting Weight</span><input type="number" pattern="[0-9]*" inputmode="numeric" id="fcz-wt-${idx}" value="${ex.suggestedWeight || ex.weight || 45}" onchange="syncFullscreenEditorInputs(${idx})"></div>
+        <div><span>Weight</span><input type="number" pattern="[0-9]*" inputmode="numeric" id="fcz-wt-${idx}" value="${ex.suggestedWeight || ex.weight || 45}" onchange="syncFullscreenEditorInputs(${idx})"></div>
       </div>`;
     container.appendChild(row);
   });
@@ -791,7 +723,7 @@ function openExerciseCatalogSelectorFullscreenPanel() {
   const container = document.getElementById('fullscreen-catalogue-tree-nodes'); container.innerHTML = ''; let fullTreeHtml = '';
   Object.keys(groups).sort().forEach(gName => {
     fullTreeHtml += `<div class="exercise-group-title">${gName}</div>`;
-    groups[gName].forEach(ex => { fullTreeHtml += `<div class="modal-selection-row" onclick="selectExerciseFromFullscreenCatalogueInjection('${ex.id}')"><span style="font-weight:600;">${ex.name}</span><span style="color:var(--text3); font-size:12px; text-transform:uppercase; letter-spacing:0.5px;">${ex.equipment}</span></div>`; });
+    groups[gName].forEach(ex => { fullTreeHtml += `<div class="modal-selection-row" onclick="selectExerciseFromFullscreenCatalogueInjection('${ex.id}')"><span style="font-weight:600;">${ex.name}</span><span style="color:var(--text3); font-size:12px; text-transform:uppercase; letter-spacing:0.5px;">${ex.equipment.replace('_',' ')}</span></div>`; });
   });
   container.innerHTML = fullTreeHtml; openFullscreenPanel('panel-exercise-catalogue-picker');
 }
@@ -802,27 +734,17 @@ function selectExerciseFromFullscreenCatalogueInjection(catalogId) {
   closeFullscreenPanel('panel-exercise-catalogue-picker'); renderFullscreenEditorRows();
 }
 
-function showModal(html) { 
+function showModal(title, html) { 
+  document.getElementById('modal-title-text').textContent = title;
   document.getElementById('modal-body').innerHTML = html; 
-  const overlay = document.getElementById('modal-overlay');
-  const modal = document.getElementById('swipeable-modal-node');
-  
-  overlay.style.display = 'flex';
-  modal.style.transform = 'translateY(100%)';
-  
-  setTimeout(() => {
-    overlay.classList.add('active');
-    modal.style.transform = 'translateY(0)';
-  }, 15);
+  const overlay = document.getElementById('modal-overlay'); const modal = document.getElementById('swipeable-modal-node');
+  overlay.style.display = 'flex'; modal.style.transform = 'translateY(100%)';
+  setTimeout(() => { overlay.classList.add('active'); modal.classList.add('active'); }, 15);
 }
 
 function closeModal() {
-  const overlay = document.getElementById('modal-overlay');
-  const modal = document.getElementById('swipeable-modal-node');
-  
-  overlay.classList.remove('active');
-  modal.style.transform = 'translateY(100%)';
-  
+  const overlay = document.getElementById('modal-overlay'); const modal = document.getElementById('swipeable-modal-node');
+  overlay.classList.remove('active'); modal.classList.remove('active');
   setTimeout(() => { overlay.style.display = 'none'; }, 260);
 }
 
@@ -842,8 +764,11 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('modal-overlay').style.display = 'none';
   document.getElementById('active-workout').style.display = 'none';
   
-  // Wire fluid interactive touch tracking variables over handle bar nodes
   wireFluidInteractiveSheetGestures('modal-drag-handle-bar', 'swipeable-modal-node', true);
+  wireFluidInteractiveSheetGestures('handle-pwm', 'panel-workout-manager');
+  wireFluidInteractiveSheetGestures('handle-pecp', 'panel-exercise-catalogue-picker');
+  wireFluidInteractiveSheetGestures('handle-psb', 'panel-schedule-builder');
+  wireFluidInteractiveSheetGestures('handle-pro', 'rest-overlay');
 
   if (!DB.get('settings')) { startOnboarding(); } 
   else { refreshAppStateLabels(); renderWorkoutScreen(); handleBottomTabClick(0); }
