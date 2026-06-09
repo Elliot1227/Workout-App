@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════
-// WORKOUT TRACKER — FULL SWIPE PACK COMPANION CONTROLLER CORE SCRIPT
+// WORKOUT TRACKER — INTERACTIVE SPRING SWIPING TOUCH ENGINE REWRITE
 // ═══════════════════════════════════════════════════════════════════
 
 const DB = {
@@ -28,8 +28,9 @@ const DEFAULT_SETTINGS = {
   startDate: new Date().toISOString().split('T')[0]
 };
 
+// ── VULOVIX GITHUB SPECIFICATION DEFINITIONS API COMPLIANT MAPPINGS ──
 const MUSCLE_LABELS = {
-  chest: 'Chest', lats: 'Lats', deltoids: 'Shoulders', biceps: 'Biceps', triceps: 'Triceps', trapezius: 'Traps', abs: 'Core', quadriceps: 'Quads', hamstrings: 'Hamstrings', gluteal: 'Glutes', calves: 'Calves', forearms: 'Forearms'
+  chests: 'Chest', lats: 'Lats', deltoids: 'Shoulders', biceps: 'Biceps', triceps: 'Triceps', trapezius: 'Traps', abs: 'Core', obliques: 'Core', quadriceps: 'Quads', hamstrings: 'Hamstrings', gluteal: 'Glutes', calves: 'Calves', forearms: 'Forearms'
 };
 
 const MUSCLE_COLOR = {
@@ -37,11 +38,11 @@ const MUSCLE_COLOR = {
 };
 
 const MASTER_EXERCISES_CATALOGUE = [
-  { id: 'bench_press', name: 'Barbell Bench Press', muscle: 'chest', sets: 3, reps: [6, 8], weight: 135, equipment: 'barbell' },
-  { id: 'incline_db_press', name: 'Incline Dumbbell Press', muscle: 'chest', sets: 3, reps: [8, 10], weight: 50, equipment: 'dumbbells' },
-  { id: 'flat_db_press', name: 'Flat Dumbbell Press', muscle: 'chest', sets: 3, reps: [8, 10], weight: 55, equipment: 'dumbbells' },
-  { id: 'dips_rack', name: 'Dip Rack Chest Dips', muscle: 'chest', sets: 3, reps: [8, 10], weight: 0, equipment: 'machines' },
-  { id: 'band_fly', name: 'Resistance Band Fly', muscle: 'chest', sets: 3, reps: [12, 15], weight: 15, equipment: 'bands' },
+  { id: 'bench_press', name: 'Barbell Bench Press', muscle: 'chests', sets: 3, reps: [6, 8], weight: 135, equipment: 'barbell' },
+  { id: 'incline_db_press', name: 'Incline Dumbbell Press', muscle: 'chests', sets: 3, reps: [8, 10], weight: 50, equipment: 'dumbbells' },
+  { id: 'flat_db_press', name: 'Flat Dumbbell Press', muscle: 'chests', sets: 3, reps: [8, 10], weight: 55, equipment: 'dumbbells' },
+  { id: 'dips_rack', name: 'Dip Rack Chest Dips', muscle: 'chests', sets: 3, reps: [8, 10], weight: 0, equipment: 'machines' },
+  { id: 'band_fly', name: 'Resistance Band Fly', muscle: 'chests', sets: 3, reps: [12, 15], weight: 15, equipment: 'bands' },
   { id: 'deadlift', name: 'Barbell Deadlift', muscle: 'lats', sets: 3, reps: [5, 5], weight: 185, equipment: 'barbell' },
   { id: 'lat_pulldown', name: 'Cable Vertical Lat Pulldown', muscle: 'lats', sets: 3, reps: [8, 12], weight: 100, equipment: 'cables' },
   { id: 'barbell_row', name: 'Bent Over Barbell Row', muscle: 'lats', sets: 3, reps: [6, 8], weight: 135, equipment: 'barbell' },
@@ -65,9 +66,9 @@ const MASTER_EXERCISES_CATALOGUE = [
 
 const BASE_SYSTEM_LIBRARY = {
   'Push A': [
-    { id: 'bench_press', name: 'Barbell Bench Press', muscles: ['chest'], sets: 3, reps: [6, 8] },
+    { id: 'bench_press', name: 'Barbell Bench Press', muscles: ['chests'], sets: 3, reps: [6, 8] },
     { id: 'ohp', name: 'Barbell Overhead Press', muscles: ['deltoids'], sets: 3, reps: [6, 8] },
-    { id: 'incline_db_press', name: 'Incline Dumbbell Press', muscles: ['chest'], sets: 3, reps: [8, 10] },
+    { id: 'incline_db_press', name: 'Incline Dumbbell Press', muscles: ['chests'], sets: 3, reps: [8, 10] },
     { id: 'lateral_raise', name: 'Dumbbell Lateral Raise', muscles: ['deltoids'], sets: 4, reps: [12, 15] },
     { id: 'tricep_pushdown', name: 'Cable Vertical Tricep Pushdown', muscles: ['triceps'], sets: 3, reps: [8, 12] }
   ],
@@ -137,7 +138,7 @@ function withSuggestion(ex) {
     const lastWeight = Math.max(...last.sets.map(st => st.weight || 0));
     const lastReps = last.sets.map(st => st.reps || 0);
     const targetReps = ex.reps ? ex.reps[1] : 12;
-    if (lastReps.every(r => r >= targetReps)) { LilyW = lastWeight + step; suggestedWeight = LilyW; isPR = true; } 
+    if (lastReps.every(r => r >= targetReps)) { suggestedWeight = lastWeight + step; isPR = true; } 
     else { suggestedWeight = lastWeight; }
     suggestedSets = last.sets.length; suggestedReps = Math.round(lastReps.reduce((a,b)=>a+b,0)/lastReps.length);
   }
@@ -152,20 +153,16 @@ function getExerciseHistory(idOrName) {
 
 let UI = { activeTabIndex: 0, screen: 'workout', calMonth: new Date(), muscleView: 'front', musclePeriod: 'week', workout: null, restTimer: null, restDurationTotal: 0, restTimeRemaining: 0, isSetViewCollapsed: true };
 
-// ── SCREEN POSITION NAVIGATION SLIDER MATRIX ──
+// ── SWIPE AND NAVIGATION LINK SLIDER INDEXES ──
 function handleBottomTabClick(tabIndex) {
-  UI.activeTabIndex = tabIndex;
-  const screens = ['workout', 'calendar', 'muscles', 'settings'];
+  UI.activeTabIndex = tabIndex; const screens = ['workout', 'calendar', 'muscles', 'settings'];
   UI.screen = screens[tabIndex];
 
-  // Animate flex container window coordinate slides
   const wrapper = document.getElementById('main-swipe-wrapper');
   wrapper.style.transform = `translateX(-${tabIndex * 25}%)`;
 
-  // Sync menu highlights indicators
   document.querySelectorAll('.nav-btn').forEach((b, idx) => {
-    if (idx === tabIndex) b.classList.add('active');
-    else b.classList.remove('active');
+    if (idx === tabIndex) b.classList.add('active'); else b.classList.remove('active');
   });
 
   if (UI.screen === 'calendar') renderCalendar();
@@ -173,42 +170,79 @@ function handleBottomTabClick(tabIndex) {
   if (UI.screen === 'settings') renderSettings();
 }
 
-// ── LIVE SWIPE HANDLERS FOR NATIVE GESTURES ──
 let touchStartX = 0; let touchStartY = 0;
 let touchEndX = 0; let touchEndY = 0;
 
 document.addEventListener('touchstart', e => {
-  touchStartX = e.changedTouches[0].screenX;
-  touchStartY = e.changedTouches[0].screenY;
+  touchStartX = e.changedTouches[0].screenX; touchStartY = e.changedTouches[0].screenY;
 }, { passive: true });
 
 document.addEventListener('touchend', e => {
-  touchEndX = e.changedTouches[0].screenX;
-  touchEndY = e.changedTouches[0].screenY;
+  touchEndX = e.changedTouches[0].screenX; touchEndY = e.changedTouches[0].screenY;
   handleSwipeGestureRouter();
 }, { passive: true });
 
 function handleSwipeGestureRouter() {
-  const deltaX = touchEndX - touchStartX;
-  const deltaY = touchEndY - touchStartY;
-
-  // Ignore active workout tracking states to avoid validation disruptions
+  const deltaX = touchEndX - touchStartX; const deltaY = touchEndY - touchStartY;
   if (document.getElementById('active-workout').style.display === 'flex') return;
+  // Guard boundary to prevent tab swiping while drawer sheets are pulled into layout tracking views
+  if (isAnyFullscreenPanelOrModalOpen()) return;
 
-  // Verify horizontal intent vs vertical bounds calculations
   if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 60) {
-    if (deltaX < 0 && UI.activeTabIndex < 3) {
-      // Swipe Left: Advance to next screen tab
-      handleBottomTabClick(UI.activeTabIndex + 1);
-    } else if (deltaX > 0 && UI.activeTabIndex > 0) {
-      // Swipe Right: Recede to previous screen tab
-      handleBottomTabClick(UI.activeTabIndex - 1);
-    }
+    if (deltaX < 0 && UI.activeTabIndex < 3) { handleBottomTabClick(UI.activeTabIndex + 1); } 
+    else if (deltaX > 0 && UI.activeTabIndex > 0) { handleBottomTabClick(UI.activeTabIndex - 1); }
   }
 }
 
-// ── ONBOARDING MANAGER FLOWS ──
-let onboardData = { pattern: ['Push A','Pull A','Legs A','rest'], blockedWeekdays: [], equipment: ['barbell','dumbbells','cables','machines'], level: 'intermediate', accentTheme: 'green' };
+function isAnyFullscreenPanelOrModalOpen() {
+  if (document.getElementById('modal-overlay').style.display === 'flex') return true;
+  const panels = ['panel-workout-manager', 'panel-exercise-catalogue-picker', 'panel-schedule-builder'];
+  return panels.some(p => document.getElementById(p).style.display === 'flex');
+}
+
+// ── FLUID 1:1 INTERACTIVE SHEET INTERFACING TOUCH SYSTEM ──
+let activeTrackingSheetNode = null;
+let sheetTouchStartY = 0;
+let sheetCurrentTransformY = 0;
+
+function wireFluidInteractiveSheetGestures(triggerId, containerId, isModal = false) {
+  const trigger = document.getElementById(triggerId);
+  const container = document.getElementById(containerId);
+  if (!trigger || !container) return;
+
+  trigger.addEventListener('touchstart', e => {
+    activeTrackingSheetNode = container;
+    sheetTouchStartY = e.touches[0].clientY;
+    container.style.transition = 'none'; // Unhook transition timing engines for true real-time response
+  }, { passive: true });
+
+  document.addEventListener('touchmove', e => {
+    if (activeTrackingSheetNode !== container) return;
+    let currentY = e.touches[0].clientY;
+    let deltaY = currentY - sheetTouchStartY;
+
+    if (deltaY < 0) deltaY = 0; // Prevent upward over-stretching
+    sheetCurrentTransformY = deltaY;
+    container.style.transform = `translateY(${deltaY}px)`;
+  }, { passive: true });
+
+  document.addEventListener('touchend', () => {
+    if (activeTrackingSheetNode !== container) return;
+    activeTrackingSheetNode = null;
+    
+    container.style.transition = 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
+    
+    // If pulled more than 120 pixels downwards, slide it off the screen
+    if (sheetCurrentTransformY > 120) {
+      if (isModal) closeModal(); else closeFullscreenPanel(containerId);
+    } else {
+      container.style.transform = 'translateY(0px)';
+    }
+    sheetCurrentTransformY = 0;
+  }, { passive: true });
+}
+
+// ── ONBOARDING MATRIX ──
 function startOnboarding() { document.getElementById('onboarding').style.display = 'flex'; generatePatternSetup(4); generateOnboardColorPicker(); showOnboardStep(1); }
 function showOnboardStep(n) { document.querySelectorAll('.onboard-step').forEach(s => s.classList.remove('active')); document.getElementById('onboard-' + n).classList.add('active'); }
 
@@ -387,21 +421,16 @@ function commitCurrentExercise() {
 
 function skipToNextExercise() { commitCurrentExercise(); const w = UI.workout; if (w.exIndex >= w.exercises.length - 1) { finishWorkout(); } else { w.exIndex++; w.setIndex = 0; renderActiveExercise(); } }
 
-// Force instantaneous full-save finish tracking parameters on call
 function endWorkoutEarly() {
   if (confirm('Exit and save progress completely?')) {
     clearRestTimer();
     if (UI.workout) {
-      clearInterval(UI.workout.timerInterval);
-      const w = UI.workout;
-      commitCurrentExercise();
-      
+      clearInterval(UI.workout.timerInterval); const w = UI.workout; commitCurrentExercise();
       const saved = {
         id: w.date, date: w.date, type: w.type, duration: Math.floor((Date.now() - w.startTime) / 1000), exercises: w.completedExercises,
         totalVolume: w.completedExercises.reduce((a,e) => a + e.sets.reduce((b,s)=>(b+(s.weight||0)*(s.reps||0)),0), 0)
       };
-      saveWorkout(saved);
-      UI.workout = null;
+      saveWorkout(saved); UI.workout = null;
     }
     document.getElementById('rest-overlay').classList.remove('show');
     document.getElementById('active-workout').style.display = 'none';
@@ -546,7 +575,7 @@ function renderHistoricalSummaryAccordion(w) {
 
 function toggleHistoricalSummaryAccordionNode(headerElement) { const content = headerElement.nextElementSibling; content.classList.toggle('open'); }
 
-// ── MASTER VULOVIX HIGHLIGHT DISTRIBUTION DATA ENGINE FRONT BACK VECTOR MAPS ──
+// ── VULOVIX NATIVE API SPECIFICATION HIGH-FIDELITY VECTOR COMPONENT ──
 function renderMuscleMap() {
   const freq = getMusclesWorked(UI.musclePeriod); const maxFreq = Math.max(...Object.values(freq), 1);
   document.getElementById('muscle-diagram').innerHTML = UI.muscleView === 'front' ? frontBodySVG(freq, maxFreq) : backBodySVG(freq, maxFreq);
@@ -583,7 +612,7 @@ function frontBodySVG(freq, maxFreq) {
     <svg viewBox="0 0 100 220" xmlns="http://www.w3.org/2000/svg">
       <path d="M44,14 c0,-6 12,-6 12,0 c0,5 -3,7 -6,9 c-3,-2 -6,-4 -6,-9 z" fill="#1e1e1e"/>
       <path d="M46,23 l8,0 l-2,5 l-4,0 z" fill="#2a2a2a"/>
-      <path id="chest" d="M49,30 c-3,0 -8,1 -12,4 c-1,4 -1,13 1,18 c4,0 9,-1 11,-4 z M51,30 c3,0 8,1 12,4 c1,4 1,13 -1,18 c-4,0 -9,-1 -11,-4 z" fill="${c(['chest'])}" opacity="${op(['chest'])}"/>
+      <path id="chests" d="M49,30 c-3,0 -8,1 -12,4 c-1,4 -1,13 1,18 c4,0 9,-1 11,-4 z M51,30 c3,0 8,1 12,4 c1,4 1,13 -1,18 c-4,0 -9,-1 -11,-4 z" fill="${c(['chest'])}" opacity="${op(['chest'])}"/>
       <path id="deltoids" d="M36,33 c-2,2 -4,6 -5,11 c2,3 5,4 7,1 c1,-4 0,-9 -2,-12 z M64,33 c2,2 4,6 5,11 c-2,3 -5,4 -7,1 c-1,-4 0,-9 2,-12 z" fill="${c(['deltoids'])}" opacity="${op(['deltoids'])}"/>
       <path id="biceps" d="M30,47 c-1,4 -1,11 1,15 c2,0 3,-4 3,-8 c0,-3 -1,-6 -4,-7 z M70,47 c1,4 1,11 -1,15 c-2,0 -3,-4 -3,-8 c0,-3 1,-6 4,-7 z" fill="${c(['biceps'])}" opacity="${op(['biceps'])}"/>
       <path id="forearms" d="M29,65 c-1,5 -3,13 0,19 c2,0 3,-6 3,-12 c0,-3 -1,-5 -3,-7 z M71,65 c1,5 3,13 0,19 c-2,0 -3,-6 -3,-12 c0,-3 1,-5 3,-7 z" fill="${c(['forearms'])}" opacity="${op(['forearms'])}"/>
@@ -609,11 +638,14 @@ function backBodySVG(freq, maxFreq) {
     </svg>`;
 }
 
-function setMusclePeriod(p) { UI.musclePeriod = p; document.querySelectorAll('.period-tab').forEach(t=>t.classList.remove('active')); document.getElementById('ptab-'+p).classList.add('active'); renderMuscleMap(); }
-function setMuscleView(v) { UI.muscleView = v; document.querySelectorAll('.muscle-tab').forEach(t=>t.classList.remove('active')); document.getElementById('mtab-'+v).classList.add('active'); renderMuscleMap(); }
-
-function openFullscreenPanel(panelId) { document.getElementById(panelId).style.display = 'flex'; }
-function closeFullscreenPanel(panelId) { document.getElementById(panelId).style.display = 'none'; }
+function openFullscreenPanel(panelId) {
+  const panel = document.getElementById(panelId); panel.style.display = 'flex';
+  setTimeout(() => panel.classList.add('active'), 10);
+}
+function closeFullscreenPanel(panelId) {
+  const panel = document.getElementById(panelId); panel.classList.remove('active');
+  setTimeout(() => panel.style.display = 'none', 280);
+}
 
 function renderSettings() {
   const s = getSettings();
@@ -640,55 +672,54 @@ function renderSettings() {
 }
 
 function editSetting(key) {
-  const s = getSettings();
+  const s = getSettings(); const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   if (key === 'color') {
-    showModal(`<div class="modal-title">Select Color</div><div class="color-picker-grid" id="settings-color-grid"></div><button class="btn btn-accent" style="margin-top:12px;" onclick="saveSettingsThemeColor()">Save</button>`);
+    showModal(`<div class="modal-title" style="padding-left: 2px;">Select Color</div><div class="color-picker-grid" id="settings-color-grid" style="margin-top: 14px;"></div><button class="btn btn-accent" style="margin-top:20px;" onclick="saveSettingsThemeColor()">Save</button>`);
     const grid = document.getElementById('settings-color-grid');
     Object.keys(ACCENT_PALETTE).forEach(k => {
       const dot = document.createElement('div'); dot.className = `color-dot ${s.accentTheme===k?'selected':''}`; dot.style.background = ACCENT_PALETTE[k].primary; dot.dataset.color = k;
       dot.onclick = function() { document.querySelectorAll('#settings-color-grid .color-dot').forEach(d=>d.classList.remove('selected')); this.classList.add('selected'); }; grid.appendChild(dot);
     });
   } else if (key === 'timers') {
-    showModal(`<div class="modal-title">Rest Times</div><div class="field"><label>Sets (s)</label><input type="number" pattern="[0-9]*" inputmode="numeric" id="edit-set-rest" value="${s.setRestSeconds}"></div><div class="field"><label>Exercises (s)</label><input type="number" pattern="[0-9]*" inputmode="numeric" id="edit-ex-rest" value="${s.exerciseRestSeconds}"></div><button class="btn btn-accent" style="margin-top:12px;" onclick="saveSettingsTimers()">Save</button>`);
+    showModal(`
+      <div class="modal-title">Rest Times</div>
+      <div class="range-slider-wrap" style="margin-top: 12px;">
+        <div style="display:flex; justify-content:between; width:100%; align-items:center;">
+          <span style="font-size:14px; font-weight:600; flex:1;">Between Sets</span>
+          <span class="range-slider-value-display" id="lbl-slider-set">${s.setRestSeconds}s</span>
+        </div>
+        <input type="range" min="15" max="300" step="5" value="${s.setRestSeconds}" id="slide-set-rest" oninput="document.getElementById('lbl-slider-set').textContent=this.value+'s'">
+      </div>
+      <div class="range-slider-wrap" style="margin-top: 14px;">
+        <div style="display:flex; justify-content:between; width:100%; align-items:center;">
+          <span style="font-size:14px; font-weight:600; flex:1;">Between Exercises</span>
+          <span class="range-slider-value-display" id="lbl-slider-ex">${s.exerciseRestSeconds}s</span>
+        </div>
+        <input type="range" min="30" max="600" step="5" value="${s.exerciseRestSeconds}" id="slide-ex-rest" oninput="document.getElementById('lbl-slider-ex').textContent=this.value+'s'">
+      </div>
+      <button class="btn btn-accent" style="margin-top:20px;" onclick="saveSettingsTimers()">Save</button>`);
   } else if (key === 'unit') {
-    showModal(`<div class="modal-title">Weight Unit</div><select id="edit-global-unit"><option value="lbs" ${s.weightUnit==='lbs'?'selected':''}>lbs</option><option value="kg" ${s.weightUnit==='kg'?'selected':''}>kg</option></select><button class="btn btn-accent" style="margin-top:12px;" onclick="saveSettingsUnit()">Save</button>`);
+    showModal(`<div class="modal-title">Weight Unit</div><select id="edit-global-unit" style="margin-top:12px;"><option value="lbs" ${s.weightUnit==='lbs'?'selected':''}>lbs</option><option value="kg" ${s.weightUnit==='kg'?'selected':''}>kg</option></select><button class="btn btn-accent" style="margin-top:20px;" onclick="saveSettingsUnit()">Save</button>`);
   } else if (key === 'blocked') {
-    showModal(`<div class="modal-title">Blocked Days</div><div class="chip-group" style="margin-top:8px;">${['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'].map((d,i)=>`<div class="chip settings-block-chip ${s.blockedWeekdays.includes(i)?'selected':''}" data-day="${i}" onclick="this.classList.toggle('selected')">${d}</div>`).join('')}</div><button class="btn btn-accent" style="margin-top:12px;" onclick="saveSettingsBlockedDays()">Save</button>`);
+    showModal(`<div class="modal-title">Blocked Days</div><div class="chip-group" style="margin-top:14px;">${days.map((d,i)=>`<div class="chip settings-block-chip ${s.blockedWeekdays.includes(i)?'selected':''}" data-day="${i}" onclick="this.classList.toggle('selected')">${d.slice(0,3)}</div>`).join('')}</div><button class="btn btn-accent" style="margin-top:20px;" onclick="saveSettingsBlockedDays()">Save</button>`);
   }
 }
 
 function saveSettingsThemeColor() { const dot = document.querySelector('#settings-color-grid .color-dot.selected'); if(dot){ const s=getSettings(); s.accentTheme=dot.dataset.color; saveSettings(s); closeModal(); renderSettings(); } }
-function saveSettingsTimers() { const s = getSettings(); s.setRestSeconds = parseInt(document.getElementById('edit-set-rest').value)||90; s.exerciseRestSeconds = parseInt(document.getElementById('edit-ex-rest').value)||180; saveSettings(s); closeModal(); renderSettings(); }
+function saveSettingsTimers() { const s = getSettings(); s.setRestSeconds = parseInt(document.getElementById('slide-set-rest').value)||90; s.exerciseRestSeconds = parseInt(document.getElementById('slide-ex-rest').value)||180; saveSettings(s); closeModal(); renderSettings(); }
 function saveSettingsUnit() { const s = getSettings(); s.weightUnit = document.getElementById('edit-global-unit').value; saveSettings(s); closeModal(); renderSettings(); refreshAppStateLabels(); }
 function saveSettingsBlockedDays() { const s = getSettings(); s.blockedWeekdays = [...document.querySelectorAll('.settings-block-chip.selected')].map(c=>parseInt(c.dataset.day)); saveSettings(s); closeModal(); renderSettings(); renderCalendar(); }
 
-function openFullscreenScheduleBuilderPanel() {
-  const s = getSettings();
-  document.getElementById('sb-loop-len-field').value = s.pattern.length;
-  adjustFullscreenScheduleSlotsLayout(s.pattern.length);
-  openFullscreenPanel('panel-schedule-builder');
-}
-
-// Fixed evaluation literal parsing logic tracking bugs mapping loops parameters
-function handleFullscreenScheduleLengthInputChange(val) {
-  const numericVal = parseInt(val) || 0;
-  if (numericVal >= 1 && numericVal <= 20) {
-    adjustFullscreenScheduleSlotsLayout(numericVal);
-  }
-}
+function openFullscreenScheduleBuilderPanel() { const s = getSettings(); document.getElementById('sb-loop-len-field').value = s.pattern.length; adjustFullscreenScheduleSlotsLayout(s.pattern.length); openFullscreenPanel('panel-schedule-builder'); }
+function handleFullscreenScheduleLengthInputChange(val) { const numericVal = parseInt(val) || 0; if (numericVal >= 1 && numericVal <= 20) { adjustFullscreenScheduleSlotsLayout(numericVal); } }
 
 function adjustFullscreenScheduleSlotsLayout(len) {
   const wrap = document.getElementById('sb-slots-inputs-list-wrapper'); wrap.innerHTML = ''; const s = getSettings();
   for (let i = 0; i < parseInt(len); i++) {
     const val = s.pattern[i] || 'rest';
-    wrap.innerHTML += `
-      <div class="schedule-builder-row">
-        <span>Day Slot #` + (i + 1) + `</span>
-        <select class="fullscreen-sb-select" id="fullscreen-sb-select-${i}"></select>
-      </div>`;
+    wrap.innerHTML += `<div class="schedule-builder-row"><span>Day Slot #` + (i + 1) + `</span><select class="fullscreen-sb-select" id="fullscreen-sb-select-${i}"></select></div>`;
     populateWorkoutDropdown(`fullscreen-sb-select-${i}`, val);
-    const selNode = document.getElementById(`fullscreen-sb-select-${i}`); const restOpt = document.createElement('option'); restOpt.value = 'rest'; restOpt.textContent = 'Rest Day';
-    if(val === 'rest') restOpt.selected = true; selNode.appendChild(restOpt);
+    const selNode = document.getElementById(`fullscreen-sb-select-${i}`); const restOpt = document.createElement('option'); restOpt.value = 'rest'; restOpt.textContent = 'Rest Day'; if(val === 'rest') restOpt.selected = true; selNode.appendChild(restOpt);
   }
 }
 
@@ -771,22 +802,34 @@ function selectExerciseFromFullscreenCatalogueInjection(catalogId) {
   closeFullscreenPanel('panel-exercise-catalogue-picker'); renderFullscreenEditorRows();
 }
 
-// ── SLIDING ACTION DISMISSAL INTERFACES FOR POPUPS ──
-let modalTouchStartY = 0; let modalTouchEndY = 0;
-const modalNode = document.getElementById('swipeable-modal-node');
-
-modalNode.addEventListener('touchstart', e => { modalTouchStartY = e.changedTouches[0].screenY; }, { passive: true });
-modalNode.addEventListener('touchend', e => {
-  modalTouchEndY = e.changedTouches[0].screenY;
-  // If drag displacement value sweeps strictly downwards, close overlay element context
-  if (modalTouchEndY - modalTouchStartY > 100) { closeModal(); }
-}, { passive: true });
-
 function showModal(html) { 
   document.getElementById('modal-body').innerHTML = html; 
-  document.getElementById('modal-overlay').style.display = 'flex'; 
+  const overlay = document.getElementById('modal-overlay');
+  const modal = document.getElementById('swipeable-modal-node');
+  
+  overlay.style.display = 'flex';
+  modal.style.transform = 'translateY(100%)';
+  
+  setTimeout(() => {
+    overlay.classList.add('active');
+    modal.style.transform = 'translateY(0)';
+  }, 15);
 }
-function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
+
+function closeModal() {
+  const overlay = document.getElementById('modal-overlay');
+  const modal = document.getElementById('swipeable-modal-node');
+  
+  overlay.classList.remove('active');
+  modal.style.transform = 'translateY(100%)';
+  
+  setTimeout(() => { overlay.style.display = 'none'; }, 260);
+}
+
+function handleModalOverlayOutsideTapDismissal(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
 function resetData() { if (confirm('Purge logs?')) { ['workouts','settings','customWorkouts'].forEach(k => DB.del(k)); location.reload(); } }
 
 function refreshAppStateLabels() {
@@ -798,6 +841,10 @@ document.addEventListener('DOMContentLoaded', () => {
   applyAccentTheme();
   document.getElementById('modal-overlay').style.display = 'none';
   document.getElementById('active-workout').style.display = 'none';
+  
+  // Wire fluid interactive touch tracking variables over handle bar nodes
+  wireFluidInteractiveSheetGestures('modal-drag-handle-bar', 'swipeable-modal-node', true);
+
   if (!DB.get('settings')) { startOnboarding(); } 
   else { refreshAppStateLabels(); renderWorkoutScreen(); handleBottomTabClick(0); }
 });
