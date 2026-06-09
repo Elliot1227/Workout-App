@@ -108,11 +108,11 @@
     </div>
     <div class="field">
       <label>Between sets (seconds)</label>
-      <input type="number" id="ob-set-rest" value="90" min="15" max="600" step="15">
+      <input type="number" pattern="[0-9]*" inputmode="numeric" id="ob-set-rest" value="90">
     </div>
     <div class="field">
       <label>Between exercises (seconds)</label>
-      <input type="number" id="ob-ex-rest" value="180" min="30" max="600" step="15">
+      <input type="number" pattern="[0-9]*" inputmode="numeric" id="ob-ex-rest" value="180">
     </div>
     <div class="field">
       <label>Weight Unit</label>
@@ -130,154 +130,148 @@
 
 <div id="app">
 
-  <div class="screen active" id="screen-workout">
-    <div id="workout-ready" style="display:flex; flex-direction:column; flex:1">
-      <div class="screen-inner" style="justify-content:center; flex:1">
-        <div>
-          <div style="font-size:14px; color:var(--text2);" id="today-label"></div>
-        </div>
-        <div class="workout-ready" id="workout-ready-content"></div>
-      </div>
-    </div>
+  <div class="screen-container" id="main-swipe-wrapper">
 
-    <div id="active-workout" style="display:none; flex-direction:column; flex:1; overflow:hidden">
-      <div class="workout-header">
-        <div class="workout-header-left">
-          <div class="workout-day-label" id="aw-type"></div>
-          <div class="workout-timer" id="workout-timer">00:00</div>
-        </div>
-        <div class="workout-vol">
-          <div class="workout-vol-num"><span id="workout-volume">0</span> <span style="font-size:12px; color:var(--text2);" id="aw-unit">lbs</span></div>
-          <div class="workout-vol-lbl">volume</div>
-        </div>
-        <button class="btn btn-danger btn-sm" onclick="endWorkoutEarly()">End</button>
-      </div>
-
-      <div class="exercise-area" id="exercise-area">
-        <div id="aw-completed-list" style="display:flex; flex-direction:column; gap:8px"></div>
-
-        <div class="ex-card" id="current-ex-card">
-          <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px">
-            <div style="flex:1; min-width:0">
-              <div style="font-size:12px; color:var(--text2);" id="aw-progress"></div>
-              
-              <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
-                <select id="aw-swap-exercise-select" onchange="swapActiveExerciseRuntime(this.value)" style="background:transparent; border:none; padding:0 24px 0 0; font-size:22px; font-weight:800; width:auto; color:var(--text); color-scheme:dark;"></select>
-              </div>
-              
-              <div class="ex-card-meta" id="aw-ex-muscles" style="margin-top:4px;"></div>
-            </div>
-            <span id="aw-pr-badge" class="pr-badge" style="display:none;">PR</span>
+    <div class="screen" id="screen-workout">
+      <div id="workout-ready" style="display:flex; flex-direction:column; height:100%;">
+        <div class="screen-inner" style="justify-content:center;">
+          <div>
+            <div style="font-size:14px; color:var(--text2);" id="today-label"></div>
           </div>
+          <div class="workout-ready" id="workout-ready-content"></div>
+        </div>
+      </div>
 
-          <div class="set-dash-container" id="aw-dash-container"></div>
+      <div id="active-workout" style="display:none; flex-direction:column; height:100%; overflow:hidden">
+        <div class="workout-header">
+          <div class="workout-header-left">
+            <div class="workout-day-label" id="aw-type"></div>
+            <div class="workout-timer" id="workout-timer">00:00</div>
+          </div>
+          <div class="workout-vol">
+            <div class="workout-vol-num"><span id="workout-volume">0</span> <span style="font-size:12px; color:var(--text2);" id="aw-unit">lbs</span></div>
+            <div class="workout-vol-lbl">volume</div>
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="endWorkoutEarly()">End</button>
+        </div>
 
-          <div class="focus-set-area">
-            <div class="focus-set-title" id="aw-focus-title">Set 1</div>
-            <div class="focus-inputs-row">
-              <div class="focus-input-box">
-                <span>WEIGHT (<span class="global-unit-label">lbs</span>)</span>
-                <input type="number" id="focus-weight" inputmode="decimal" onchange="saveActiveFocusInputs()">
+        <div class="exercise-area" id="exercise-area">
+          <div id="aw-completed-list" style="display:flex; flex-direction:column; gap:8px"></div>
+          <div class="ex-card" id="current-ex-card">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px">
+              <div style="flex:1; min-width:0">
+                <div style="font-size:12px; color:var(--text2);" id="aw-progress"></div>
+                <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+                  <select id="aw-swap-exercise-select" onchange="swapActiveExerciseRuntime(this.value)" style="background:transparent; border:none; padding:0 24px 0 0; font-size:22px; font-weight:800; width:auto; color:var(--text); color-scheme:dark;"></select>
+                </div>
+                <div class="ex-card-meta" id="aw-ex-muscles" style="margin-top:4px;"></div>
               </div>
-              <div class="focus-input-box">
-                <span>REPS</span>
-                <input type="number" id="focus-reps" inputmode="numeric" onchange="saveActiveFocusInputs()">
+              <span id="aw-pr-badge" class="pr-badge" style="display:none;">PR</span>
+            </div>
+            <div class="set-dash-container" id="aw-dash-container"></div>
+            <div class="focus-set-area">
+              <div class="focus-set-title" id="aw-focus-title">Set 1</div>
+              <div class="focus-inputs-row">
+                <div class="focus-input-box">
+                  <span>Weight (<span class="global-unit-label">lbs</span>)</span>
+                  <input type="number" pattern="[0-9]*" inputmode="numeric" id="focus-weight" onchange="saveActiveFocusInputs()">
+                </div>
+                <div class="focus-input-box">
+                  <span>Reps</span>
+                  <input type="number" pattern="[0-9]*" inputmode="numeric" id="focus-reps" onchange="saveActiveFocusInputs()">
+                </div>
               </div>
             </div>
-          </div>
-
-          <div class="big-check-container">
-            <button class="btn-big-check" id="aw-submit-set-btn">
-              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-            </button>
-          </div>
-
-          <div class="card-sm" style="padding: 10px 12px; margin-top: 4px;">
-            <div class="collapse-header" id="collapse-trigger" onclick="toggleSetCollapse()">
-              <span>All sets view</span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            <div class="big-check-container">
+              <button class="btn-big-check" id="aw-submit-set-btn">
+                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              </button>
             </div>
-            <div class="collapse-content" id="collapse-target"></div>
-          </div>
-
-          <div class="ex-footer">
-            <button class="btn btn-ghost btn-sm" onclick="addSetToCurrentExercise()" style="flex:1">+ Set</button>
-            <button class="btn btn-secondary btn-sm" onclick="skipToNextExercise()" style="flex:1">Skip →</button>
+            <div class="card-sm" style="padding: 10px 12px; margin-top: 4px;">
+              <div class="collapse-header" id="collapse-trigger" onclick="toggleSetCollapse()">
+                <span>All sets view</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+              <div class="collapse-content" id="collapse-target"></div>
+            </div>
+            <div class="ex-footer">
+              <button class="btn btn-ghost btn-sm" onclick="addSetToCurrentExercise()" style="flex:1">+ Set</button>
+              <button class="btn btn-secondary btn-sm" onclick="skipToNextExercise()" style="flex:1">Skip →</button>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="screen" id="screen-calendar">
-    <div class="screen-inner">
-      <div class="page-title">History</div>
-
-      <div class="cal-month-nav">
-        <button class="cal-nav-btn" onclick="changeCalMonth(-1)">
-          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <h2 id="cal-month-label"></h2>
-        <button class="cal-nav-btn" onclick="changeCalMonth(1)">
-          <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-      </div>
-
-      <div class="card" style="padding:12px">
-        <div class="cal-grid" id="cal-grid"></div>
-      </div>
-
-      <div class="stats-grid">
-        <div class="stat-card"><div class="stat-val" id="stat-total">0</div><div class="stat-lbl">Workouts</div></div>
-        <div class="stat-card"><div class="stat-val" id="stat-streak">0</div><div class="stat-lbl">Streak</div></div>
-        <div class="stat-card" style="grid-column: 1/-1"><div class="stat-val" id="stat-vol">0</div><div class="stat-lbl">Total Volume</div></div>
-      </div>
-
-      <div style="display:flex; flex-direction:column;" id="cal-history-accordion-root"></div>
-
-      <div class="card">
-        <div class="section-label">Weekly Volume</div>
-        <div class="vol-bars" id="vol-chart"></div>
+    <div class="screen" id="screen-calendar">
+      <div class="screen-inner">
+        <div class="page-title">History</div>
+        <div class="cal-month-nav">
+          <button class="cal-nav-btn" onclick="changeCalMonth(-1)">
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <h2 id="cal-month-label"></h2>
+          <button class="cal-nav-btn" onclick="changeCalMonth(1)">
+            <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+        <div class="card" style="padding:12px">
+          <div class="cal-grid" id="cal-grid"></div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-val" id="stat-total">0</div><div class="stat-lbl">Workouts</div></div>
+          <div class="stat-card"><div class="stat-val" id="stat-streak">0</div><div class="stat-lbl">Streak</div></div>
+          <div class="stat-card" style="grid-column: 1/-1"><div class="stat-val" id="stat-vol">0</div><div class="stat-lbl">Total Volume</div></div>
+        </div>
+        <div style="display:flex; flex-direction:column;" id="cal-history-accordion-root"></div>
+        <div class="card">
+          <div class="section-label">Weekly Volume</div>
+          <div class="vol-bars" id="vol-chart"></div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="screen" id="screen-muscles">
-    <div class="screen-inner">
-      <div class="page-title">Muscle Map</div>
-      <div class="muscle-period-tabs">
-        <button class="period-tab active" id="ptab-week" onclick="setMusclePeriod('week')">Week</button>
-        <button class="period-tab" id="ptab-month" onclick="setMusclePeriod('month')">Month</button>
-        <button class="period-tab" id="ptab-all" onclick="setMusclePeriod('all')">All Time</button>
+    <div class="screen" id="screen-muscles">
+      <div class="screen-inner">
+        <div class="page-title">Muscle Map</div>
+        <div class="muscle-period-tabs" style="margin-bottom:8px;">
+          <button class="period-tab active" id="ptab-week" onclick="setMusclePeriod('week')">Week</button>
+          <button class="period-tab" id="ptab-month" onclick="setMusclePeriod('month')">Month</button>
+          <button class="period-tab" id="ptab-all" onclick="setMusclePeriod('all')">All Time</button>
+        </div>
+        <div class="muscle-view-tabs" style="margin-bottom:12px;">
+          <button class="muscle-tab active" id="mtab-front" onclick="setMuscleView('front')">Front</button>
+          <button class="muscle-tab" id="mtab-back" onclick="setMuscleView('back')">Back</button>
+        </div>
+        <div class="card" style="padding:16px;">
+          <div class="muscle-svg-wrap" id="muscle-diagram"></div>
+          <div class="muscle-legend" id="muscle-legend" style="margin-top:16px;"></div>
+        </div>
+        <div id="muscle-breakdown"></div>
       </div>
-      <div class="card" style="padding:16px; margin-top:8px;">
-        <div class="muscle-legend" id="muscle-legend"></div>
+    </div>
+
+    <div class="screen" id="screen-settings">
+      <div class="screen-inner">
+        <div class="page-title">Settings</div>
+        <div id="settings-content"></div>
       </div>
-      <div id="muscle-breakdown"></div>
     </div>
-  </div>
 
-  <div class="screen" id="screen-settings">
-    <div class="screen-inner">
-      <div class="page-title">Settings</div>
-      <div id="settings-content"></div>
-    </div>
-  </div>
-
-  <nav class="nav">
-    <button class="nav-btn active" data-screen="workout" onclick="showScreen('workout')">
+  </div> <nav class="nav">
+    <button class="nav-btn active" data-index="0" onclick="handleBottomTabClick(0)">
       <svg viewBox="0 0 24 24"><path d="M6 4v6a6 6 0 0 0 12 0V4"/><line x1="4" y1="20" x2="20" y2="20"/></svg>
       Workout
     </button>
-    <button class="nav-btn" data-screen="calendar" onclick="showScreen('calendar')">
+    <button class="nav-btn" data-index="1" onclick="handleBottomTabClick(1)">
       <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       History
     </button>
-    <button class="nav-btn" data-screen="muscles" onclick="showScreen('muscles')">
+    <button class="nav-btn" data-index="2" onclick="handleBottomTabClick(2)">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
       Muscles
     </button>
-    <button class="nav-btn" data-screen="settings" onclick="showScreen('settings')">
+    <button class="nav-btn" data-index="3" onclick="handleBottomTabClick(3)">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       Settings
     </button>
@@ -286,20 +280,18 @@
   <div id="panel-workout-manager" class="full-panel">
     <div class="panel-header">
       <div class="panel-title" id="wm-panel-title-text">Manage Workouts</div>
-      <button class="btn btn-secondary btn-sm" onclick="closeFullscreenPanel('panel-workout-manager')">Back</button>
+      <button class="back-arrow-btn" onclick="closeFullscreenPanel('panel-workout-manager')">&lt;</button>
     </div>
-    
     <div id="panel-wm-dashboard-view" style="display:flex; flex-direction:column; gap:16px;">
       <div style="display:flex; flex-direction:column; gap:10px;" id="panel-wm-routines-container"></div>
       <div style="border-top:1px solid var(--bg3); padding-top:16px; margin-top:8px;">
         <div class="field">
-          <label>New Custom Workout Variant</label>
-          <input type="text" id="panel-wm-new-name-field" placeholder="e.g. Push B, Leg Heavy">
+          <label>Create Custom Workout Program Name</label>
+          <input type="text" id="panel-wm-new-name-field" placeholder="e.g. Push B, Pull Heavy">
         </div>
         <button class="btn btn-accent btn-sm" style="width:100%; margin-top:10px; padding:12px 14px;" onclick="createNewWorkoutProgramFromFullscreenHub()">+ Add Workout</button>
       </div>
     </div>
-
     <div id="panel-wm-editing-view" style="display:none; flex-direction:column; gap:14px;">
       <div id="fullscreen-cz-exercises-list-wrapper" style="display:flex; flex-direction:column; gap:12px;"></div>
       <button class="btn btn-secondary btn-sm" onclick="openExerciseCatalogSelectorFullscreenPanel()">+ Add an Exercise</button>
@@ -313,7 +305,7 @@
   <div id="panel-exercise-catalogue-picker" class="full-panel" style="z-index:600;">
     <div class="panel-header">
       <div class="panel-title">Select Exercise</div>
-      <button class="btn btn-secondary btn-sm" onclick="closeFullscreenPanel('panel-exercise-catalogue-picker')">Cancel</button>
+      <button class="back-arrow-btn" onclick="closeFullscreenPanel('panel-exercise-catalogue-picker')">&lt;</button>
     </div>
     <div id="fullscreen-catalogue-tree-nodes" style="display:flex; flex-direction:column; gap:4px;"></div>
   </div>
@@ -321,21 +313,17 @@
   <div id="panel-schedule-builder" class="full-panel">
     <div class="panel-header">
       <div class="panel-title">Rotation Loop</div>
-      <button class="btn btn-secondary btn-sm" onclick="closeFullscreenPanel('panel-schedule-builder')">Back</button>
+      <button class="back-arrow-btn" onclick="closeFullscreenPanel('panel-schedule-builder')">&lt;</button>
     </div>
     <div class="field" style="margin-bottom:16px;">
-      <label>Sequence Block Length</label>
-      <select id="sb-loop-len-selector" onchange="adjustFullscreenScheduleSlotsLayout(this.value)">
-        ${[1,2,3,4,5,6,7,8,9,10].map(n => `<option value="${n}">${n} Days</option>`).join('')}
-      </select>
+      <label>Sequence Days Number</label>
+      <input type="number" pattern="[0-9]*" inputmode="numeric" id="sb-loop-len-field" oninput="handleFullscreenScheduleLengthInputChange(this.value)">
     </div>
     <div id="sb-slots-inputs-list-wrapper" style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;"></div>
     <button class="btn btn-accent" onclick="saveFullscreenScheduleSettingsPatternMatrix()">Save Rolling Vector</button>
   </div>
 
-</div>
-
-<div id="rest-overlay">
+</div> <div id="rest-overlay">
   <div class="rest-type" id="rest-overlay-type">Rest</div>
   <div class="rest-label" id="rest-overlay-label">Resting</div>
   <div class="rest-ring">
@@ -351,17 +339,17 @@
   <div class="rest-next" id="rest-overlay-next"></div>
   
   <div class="snooze-container">
-    <button class="btn btn-secondary btn-sm" onclick="snoozeRestTimer(10)">+10s</button>
-    <button class="btn btn-secondary btn-sm" onclick="snoozeRestTimer(30)">+30s</button>
+    <button class="btn btn-secondary" onclick="snoozeRestTimer(10)">+10s</button>
+    <button class="btn btn-secondary" onclick="snoozeRestTimer(30)">+30s</button>
   </div>
   
   <button class="btn btn-accent rest-skip-btn" id="rest-skip-trigger">Skip Rest →</button>
   <button class="btn btn-ghost" style="margin-top: 12px;" onclick="endWorkoutEarly()">End Workout</button>
 </div>
 
-<div id="modal-overlay" class="modal-overlay" onclick="if(event.target===this)closeModal()">
-  <div class="modal">
-    <div class="modal-handle"></div>
+<div id="modal-overlay" class="modal-overlay">
+  <div class="modal" id="swipeable-modal-node">
+    <div class="modal-handle" id="modal-drag-handle-bar"></div>
     <div id="modal-body"></div>
   </div>
 </div>
