@@ -295,7 +295,9 @@ function updateWorkoutTimer() {
 }
 
 function populateSwapExerciseDropdown(type) {
-  const select = document.getElementById('aw-swap-exercise-select'); select.innerHTML = '';
+  const select = document.getElementById('aw-swap-exercise-select'); 
+  if(!select) return;
+  select.innerHTML = '';
   const currentEx = UI.workout.exercises[UI.workout.exIndex];
   const activeOpt = document.createElement('option'); activeOpt.value = currentEx.id || currentEx.name; activeOpt.textContent = currentEx.name; activeOpt.selected = true; select.appendChild(activeOpt);
   MASTER_EXERCISES_CATALOGUE.forEach(ex => { if (ex.name !== currentEx.name) { const opt = document.createElement('option'); opt.value = ex.id || ex.name; opt.textContent = ex.name; select.appendChild(opt); } });
@@ -312,36 +314,52 @@ function renderActiveExercise() {
   const w = UI.workout; const ex = w.exercises[w.exIndex]; const sets = w.setData[w.exIndex];
   let activeSetIdx = sets.findIndex(s => !s.done); if (activeSetIdx === -1) activeSetIdx = sets.length - 1; w.setIndex = activeSetIdx;
 
-  document.getElementById('aw-type').textContent = w.type; document.getElementById('aw-progress').textContent = `${w.exIndex + 1} / ${w.exercises.length}`;
-  document.getElementById('aw-ex-muscles').textContent = (ex.muscles || []).map(m => MUSCLE_LABELS[m] || m).filter((v,i,a)=>a.indexOf(v)===i).join(' · ');
-  document.getElementById('aw-pr-badge').style.display = ex.isPR ? 'inline-flex' : 'none'; populateSwapExerciseDropdown(w.type);
+  const typeEl = document.getElementById('aw-type'); if(typeEl) typeEl.textContent = w.type; 
+  const progEl = document.getElementById('aw-progress'); if(progEl) progEl.textContent = `${w.exIndex + 1} / ${w.exercises.length}`;
+  const muscEl = document.getElementById('aw-ex-muscles'); if(muscEl) muscEl.textContent = (ex.muscles || []).map(m => MUSCLE_LABELS[m] || m).filter((v,i,a)=>a.indexOf(v)===i).join(' · ');
+  const prEl = document.getElementById('aw-pr-badge'); if(prEl) prEl.style.display = ex.isPR ? 'inline-flex' : 'none'; 
+  
+  populateSwapExerciseDropdown(w.type);
 
-  const dashContainer = document.getElementById('aw-dash-container'); dashContainer.innerHTML = '';
-  sets.forEach((s, i) => { const dash = document.createElement('div'); dash.className = `set-dash ${s.done ? 'completed' : (i===activeSetIdx ? 'current' : '')}`; dashContainer.appendChild(dash); });
+  const dashContainer = document.getElementById('aw-dash-container'); 
+  if(dashContainer) {
+    dashContainer.innerHTML = '';
+    sets.forEach((s, i) => { const dash = document.createElement('div'); dash.className = `set-dash ${s.done ? 'completed' : (i===activeSetIdx ? 'current' : '')}`; dashContainer.appendChild(dash); });
+  }
 
-  document.getElementById('aw-focus-title').textContent = `Set ${activeSetIdx + 1}`;
+  const titleEl = document.getElementById('aw-focus-title'); if(titleEl) titleEl.textContent = `Set ${activeSetIdx + 1}`;
   const inputWeight = document.getElementById('focus-weight'); const inputReps = document.getElementById('focus-reps');
-  inputWeight.value = sets[activeSetIdx].weight; inputReps.value = sets[activeSetIdx].reps;
+  if(inputWeight && inputReps) {
+    inputWeight.value = sets[activeSetIdx].weight; inputReps.value = sets[activeSetIdx].reps;
+    if (sets[activeSetIdx].done) { inputWeight.setAttribute('disabled','true'); inputReps.setAttribute('disabled','true'); }
+    else { inputWeight.removeAttribute('disabled'); inputReps.removeAttribute('disabled'); }
+  }
 
-  if (sets[activeSetIdx].done) { inputWeight.setAttribute('disabled','true'); inputReps.setAttribute('disabled','true'); }
-  else { inputWeight.removeAttribute('disabled'); inputReps.removeAttribute('disabled'); }
+  const collapseTarget = document.getElementById('collapse-target'); 
+  if(collapseTarget) {
+    collapseTarget.innerHTML = '';
+    sets.forEach((s, idx) => { collapseTarget.innerHTML += `<div class="mini-set-row ${s.done?'done':''}"><span>Set ${idx + 1}</span><span>${s.weight} lbs × ${s.reps}</span></div>`; });
+    const trigger = document.getElementById('collapse-trigger');
+    if(trigger) {
+      if (UI.isSetViewCollapsed) { trigger.classList.remove('open'); collapseTarget.classList.remove('open'); }
+      else { trigger.classList.add('open'); collapseTarget.classList.add('open'); }
+    }
+  }
 
-  const collapseTarget = document.getElementById('collapse-target'); collapseTarget.innerHTML = '';
-  sets.forEach((s, idx) => { collapseTarget.innerHTML += `<div class="mini-set-row ${s.done?'done':''}"><span>Set ${idx + 1}</span><span>${s.weight} lbs × ${s.reps}</span></div>`; });
-
-  const trigger = document.getElementById('collapse-trigger');
-  if (UI.isSetViewCollapsed) { trigger.classList.remove('open'); collapseTarget.classList.remove('open'); }
-  else { trigger.classList.add('open'); collapseTarget.classList.add('open'); }
-
-  document.getElementById('aw-completed-list').innerHTML = w.completedExercises.map(ce => `
-    <div class="completed-ex"><div class="completed-info"><div class="completed-name">${ce.name}</div><div class="completed-meta">${ce.sets.length} sets done</div></div></div>`).join('');
+  const compList = document.getElementById('aw-completed-list');
+  if(compList) {
+    compList.innerHTML = w.completedExercises.map(ce => `
+      <div class="completed-ex"><div class="completed-info"><div class="completed-name">${ce.name}</div><div class="completed-meta">${ce.sets.length} sets done</div></div></div>`).join('');
+  }
 }
 
 function saveActiveFocusInputs() {
   const w = UI.workout; const sets = w.setData[w.exIndex]; const si = w.setIndex;
-  if (sets[si] && !sets[si].done) {
-    sets[si].weight = parseFloat(document.getElementById('focus-weight').value) || 0;
-    sets[si].reps = parseInt(document.getElementById('focus-reps').value) || 0;
+  const wIn = document.getElementById('focus-weight');
+  const rIn = document.getElementById('focus-reps');
+  if (sets[si] && !sets[si].done && wIn && rIn) {
+    sets[si].weight = parseFloat(wIn.value) || 0;
+    sets[si].reps = parseInt(rIn.value) || 0;
   }
 }
 
@@ -353,7 +371,11 @@ function addSetToCurrentExercise() {
 
 function submitFocusedActiveSet() {
   const w = UI.workout; const sets = w.setData[w.exIndex]; const si = w.setIndex; const timeLog = w.setTimestamps[w.exIndex]; const ex = w.exercises[w.exIndex];
-  sets[si].weight = parseFloat(document.getElementById('focus-weight').value) || 0; sets[si].reps = parseInt(document.getElementById('focus-reps').value) || 0;
+  
+  const wIn = document.getElementById('focus-weight');
+  const rIn = document.getElementById('focus-reps');
+  if(wIn) sets[si].weight = parseFloat(wIn.value) || 0; 
+  if(rIn) sets[si].reps = parseInt(rIn.value) || 0;
   
   if (sets[si].weight !== ex.suggestedWeight || sets[si].reps !== ex.suggestedReps) { sets[si].hasAsteriskDeviation = true; }
   sets[si].done = true; const setDurationSeconds = Math.floor((Date.now() - timeLog.startTime) / 1000);
@@ -410,11 +432,8 @@ function showRestScreen(type, nextExName, onDone) {
   UI.restDurationTotal = duration; UI.restTimeRemaining = duration; UI.restOnDoneCallback = onDone;
   const overlay = document.getElementById('rest-overlay');
   document.getElementById('rest-overlay-type').textContent = type === 'exercise' ? 'Exercise Rest' : 'Set Rest';
-  
-  // Set rest label context clearly
-  document.getElementById('rest-overlay-label').textContent = type === 'exercise' ? 'Great set! Recovery time.' : 'Set complete. Rest up.';
-  document.getElementById('rest-overlay-next').innerHTML = nextExName ? `Next up: <strong>${nextExName}</strong>` : (type === 'exercise' ? '<strong>Last exercise done!</strong>' : '');
-  
+  document.getElementById('rest-overlay-label').textContent = 'Resting';
+  document.getElementById('rest-overlay-next').innerHTML = nextExName ? `Next: <strong>${nextExName}</strong>` : '';
   updateRestOverlayDisplay(); 
   overlay.style.display = 'flex';
   setTimeout(() => { overlay.classList.add('active'); }, 10);
@@ -465,7 +484,6 @@ function renderCalendar() {
     if (isToday) cell.classList.add('today');
     if (comp) { cell.classList.add('has-workout'); cell.onclick = () => renderHistoricalSummaryAccordion(comp); }
     else if (schedType !== 'rest') {
-      // Fixes the dots not showing for past missed days.
       cell.classList.add('scheduled'); const dot = document.createElement('div'); dot.className = 'cal-day-dot';
       const normalizedName = schedType.toLowerCase(); let colorCode = '#555557';
       if (normalizedName.includes('push')) colorCode = 'var(--red)';
