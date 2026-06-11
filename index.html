@@ -5,43 +5,37 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="stylesheet" href="style.css">
 <title>Workout Tracker</title>
 </head>
 <body>
 
-<div id="onboarding">
-  <div class="onboard-step active" id="onboard-1">
+<div id="onboarding" style="display:none">
+
+  <div class="onboard-step" id="onboard-1">
     <div style="padding-top:20px">
       <div style="font-size:48px;margin-bottom:16px">🏋️</div>
-      <div class="onboard-num">STEP 1 OF 3</div>
-      <div class="onboard-title">Welcome</div>
-      <div class="onboard-sub">Let's set up your training program.</div>
+      <div class="onboard-num">STEP 1 OF 6</div>
+      <div class="onboard-title">Setup Rotation</div>
+      <div class="onboard-sub">Configure how many days are in your rolling sequence before it repeats.</div>
     </div>
     <div class="field">
-      <label>Days per week</label>
-      <select id="ob-days">
-        <option value="3">3 days</option>
-        <option value="4" selected>4 days</option>
-        <option value="5">5 days</option>
-        <option value="6">6 days</option>
-      </select>
+      <label>Days in loop</label>
+      <input type="number" pattern="[0-9]*" inputmode="numeric" id="ob-pattern-length" value="4">
     </div>
     <div class="onboard-actions"><button class="btn btn-accent" onclick="onboardNext(1)">Continue</button></div>
   </div>
 
   <div class="onboard-step" id="onboard-2">
     <div>
-      <div class="onboard-num">STEP 2 OF 3</div>
-      <div class="onboard-title">Equipment</div>
-      <div class="onboard-sub">What gear do you have access to?</div>
+      <div class="onboard-num">STEP 2 OF 6</div>
+      <div class="onboard-title">Assign Days</div>
+      <div class="onboard-sub">Configure what type of day each slot represents.</div>
     </div>
-    <div class="chip-group">
-      <div class="chip ob-eq-chip selected" data-eq="barbell" onclick="this.classList.toggle('selected')">Barbell & Rack</div>
-      <div class="chip ob-eq-chip selected" data-eq="dumbbells" onclick="this.classList.toggle('selected')">Dumbbells</div>
-      <div class="chip ob-eq-chip selected" data-eq="cables" onclick="this.classList.toggle('selected')">Cables</div>
-      <div class="chip ob-eq-chip selected" data-eq="machines" onclick="this.classList.toggle('selected')">Machines</div>
-    </div>
+    <div id="ob-pattern-slots-container" style="display:flex; flex-direction:column; gap:12px;"></div>
     <div class="onboard-actions">
       <button class="btn btn-accent" onclick="onboardNext(2)">Continue</button>
       <button class="btn btn-ghost" onclick="showOnboardStep(1)">Back</button>
@@ -50,15 +44,66 @@
 
   <div class="onboard-step" id="onboard-3">
     <div>
-      <div class="onboard-num">STEP 3 OF 3</div>
-      <div class="onboard-title">Rest Timers</div>
+      <div class="onboard-num">STEP 3 OF 6</div>
+      <div class="onboard-title">Blocked Days</div>
+      <div class="onboard-sub">Select days you can never train. The schedule pauses on these days.</div>
+    </div>
+    <div class="chip-group">
+      <div class="chip ob-block-chip" data-day="0" onclick="this.classList.toggle('selected')">Sun</div>
+      <div class="chip ob-block-chip" data-day="1" onclick="this.classList.toggle('selected')">Mon</div>
+      <div class="chip ob-block-chip" data-day="2" onclick="this.classList.toggle('selected')">Tue</div>
+      <div class="chip ob-block-chip" data-day="3" onclick="this.classList.toggle('selected')">Wed</div>
+      <div class="chip ob-block-chip" data-day="4" onclick="this.classList.toggle('selected')">Thu</div>
+      <div class="chip ob-block-chip" data-day="5" onclick="this.classList.toggle('selected')">Fri</div>
+      <div class="chip ob-block-chip" data-day="6" onclick="this.classList.toggle('selected')">Sat</div>
+    </div>
+    <div class="onboard-actions">
+      <button class="btn btn-accent" onclick="onboardNext(3)">Continue</button>
+      <button class="btn btn-ghost" onclick="showOnboardStep(2)">Back</button>
+    </div>
+  </div>
+
+  <div class="onboard-step" id="onboard-4">
+    <div>
+      <div class="onboard-num">STEP 4 OF 6</div>
+      <div class="onboard-title">Equipment</div>
+      <div class="onboard-sub">Select the gear you have access to.</div>
+    </div>
+    <div class="chip-group" id="ob-equipment-container"></div>
+    <div class="onboard-actions">
+      <button class="btn btn-accent" onclick="onboardNext(4)">Continue</button>
+      <button class="btn btn-ghost" onclick="showOnboardStep(3)">Back</button>
+    </div>
+  </div>
+
+  <div class="onboard-step" id="onboard-5">
+    <div>
+      <div class="onboard-num">STEP 5 OF 6</div>
+      <div class="onboard-title">App Color</div>
+      <div class="onboard-sub">Select your theme color.</div>
+    </div>
+    <div class="color-picker-grid" id="ob-color-grid"></div>
+    <div class="onboard-actions">
+      <button class="btn btn-accent" onclick="onboardNext(5)">Continue</button>
+      <button class="btn btn-ghost" onclick="showOnboardStep(4)">Back</button>
+    </div>
+  </div>
+
+  <div class="onboard-step" id="onboard-6">
+    <div>
+      <div class="onboard-num">STEP 6 OF 6</div>
+      <div class="onboard-title">Rest Times</div>
       <div class="onboard-sub">Set your standard rest parameters.</div>
     </div>
-    <div class="field">
-      <label>Between sets (seconds)</label>
-      <input type="number" pattern="[0-9]*" inputmode="numeric" id="ob-set-rest" value="90">
+    <div class="range-slider-wrap">
+      <div style="display:flex; justify-content:space-between;"><span style="font-size:14px; font-weight:600;">Between Sets</span><span class="range-slider-value-display" id="lbl-ob-set">90s</span></div>
+      <input type="range" min="15" max="300" step="5" value="90" id="ob-set-rest" oninput="document.getElementById('lbl-ob-set').textContent=this.value+'s'">
     </div>
-    <div class="field" style="margin-top:10px;">
+    <div class="range-slider-wrap" style="margin-top:10px;">
+      <div style="display:flex; justify-content:space-between;"><span style="font-size:14px; font-weight:600;">Between Exercises</span><span class="range-slider-value-display" id="lbl-ob-ex">180s</span></div>
+      <input type="range" min="30" max="600" step="5" value="180" id="ob-ex-rest" oninput="document.getElementById('lbl-ob-ex').textContent=this.value+'s'">
+    </div>
+    <div class="field" style="margin-top:16px;">
       <label>Weight unit</label>
       <div class="chip-group">
         <div class="chip ob-unit-chip selected" data-unit="lbs" onclick="document.querySelectorAll('.ob-unit-chip').forEach(c=>c.classList.remove('selected'));this.classList.add('selected')">lbs</div>
@@ -66,12 +111,12 @@
       </div>
     </div>
     <div class="onboard-actions">
-      <button class="btn btn-accent" onclick="onboardNext(3)">Save & Start</button>
-      <button class="btn btn-ghost" onclick="showOnboardStep(2)">Back</button>
+      <button class="btn btn-accent" onclick="onboardNext(6)">Save & Start</button>
+      <button class="btn btn-ghost" onclick="showOnboardStep(5)">Back</button>
     </div>
   </div>
-</div>
 
+</div>
 <div id="app">
   <div class="screen-container" id="main-swipe-wrapper">
     
@@ -89,7 +134,11 @@
             <div class="workout-day-label" id="aw-type"></div>
             <div class="workout-timer" id="workout-timer">00:00</div>
           </div>
-          <button class="btn btn-danger btn-sm" onclick="endWorkoutEarly()">End Workout</button>
+          <div class="workout-vol">
+            <div class="workout-vol-num"><span id="workout-volume">0</span> <span style="font-size:12px;color:var(--text2);font-weight:400" id="aw-unit">lbs</span></div>
+            <div class="workout-vol-lbl">volume</div>
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="endWorkoutEarly()">End</button>
         </div>
 
         <div class="exercise-area" id="exercise-area">
@@ -97,10 +146,12 @@
           
           <div class="ex-card" id="current-ex-card">
             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-              <div>
+              <div style="flex:1; min-width:0">
                 <div style="font-size:12px; color:var(--text2);" id="aw-progress"></div>
-                <div class="ex-card-name" id="aw-ex-name"></div>
-                <div class="ex-card-meta" id="aw-ex-muscles"></div>
+                <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+                  <select id="aw-swap-exercise-select" onchange="swapActiveExerciseRuntime(this.value)" style="background:transparent; border:none; padding:0 24px 0 0; font-size:22px; font-weight:800; width:100%; color:var(--text); color-scheme:dark;"></select>
+                </div>
+                <div class="ex-card-meta" id="aw-ex-muscles" style="margin-top:4px;"></div>
               </div>
             </div>
 
@@ -150,6 +201,15 @@
           <button class="cal-nav-btn" onclick="changeCalMonth(1)"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
         </div>
         <div class="card" style="padding:12px"><div class="cal-grid" id="cal-grid"></div></div>
+        
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-val" id="stat-total">0</div><div class="stat-lbl">Workouts</div></div>
+          <div class="stat-card"><div class="stat-val" id="stat-streak">0</div><div class="stat-lbl">Streak</div></div>
+          <div class="stat-card" style="grid-column: 1/-1"><div class="stat-val" id="stat-vol">0</div><div class="stat-lbl">Total Volume</div></div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; margin-top:4px;" id="cal-history-accordion-root"></div>
+        <div class="card"><div class="section-label">Weekly Volume</div><div class="vol-bars" id="vol-chart"></div></div>
       </div>
     </div>
 
@@ -161,12 +221,22 @@
           <button class="period-tab" id="ptab-month" onclick="setMusclePeriod('month')">Month</button>
           <button class="period-tab" id="ptab-all" onclick="setMusclePeriod('all')">All Time</button>
         </div>
+        <div class="muscle-view-tabs" style="margin-bottom:12px;">
+          <button class="muscle-tab active" id="mtab-front" onclick="setMuscleView('front')">Front</button>
+          <button class="muscle-tab" id="mtab-back" onclick="setMuscleView('back')">Back</button>
+        </div>
         <div class="card" style="padding:16px;">
-          <div id="muscle-diagram" class="muscle-svg-wrap">
-             <div style="color:var(--text3); text-align:center; padding: 40px 0;">Loading Vector Map...</div>
+          <div id="custom-svg-container" class="muscle-svg-wrap">
+            <div id="custom-svg-front">
+               <p style="color:gray; text-align:center; padding: 40px 0; border: 1px dashed #333; border-radius: 8px;">[ Paste Front SVG Code Here ]</p>
+            </div>
+            <div id="custom-svg-back" style="display:none;">
+               <p style="color:gray; text-align:center; padding: 40px 0; border: 1px dashed #333; border-radius: 8px;">[ Paste Back SVG Code Here ]</p>
+            </div>
           </div>
           <div class="muscle-legend" id="muscle-legend" style="margin-top:16px;"></div>
         </div>
+        <div id="muscle-breakdown"></div>
       </div>
     </div>
 
@@ -183,12 +253,60 @@
     <button class="nav-btn active" data-index="0" onclick="handleBottomTabClick(0)"><svg viewBox="0 0 24 24"><path d="M6 4v6a6 6 0 0 0 12 0V4"/><line x1="4" y1="20" x2="20" y2="20"/></svg>Workout</button>
     <button class="nav-btn" data-index="1" onclick="handleBottomTabClick(1)"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>History</button>
     <button class="nav-btn" data-index="2" onclick="handleBottomTabClick(2)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>Muscles</button>
-    <button class="nav-btn" data-index="3" onclick="handleBottomTabClick(3)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06-.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</button>
+    <button class="nav-btn" data-index="3" onclick="handleBottomTabClick(3)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06-.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</button>
   </nav>
 </div>
 
-<div id="rest-overlay">
-  <div class="rest-type" id="rest-overlay-type">Rest</div>
+<div id="panel-workout-manager" class="full-panel" style="z-index:500">
+  <div class="modal-handle-bar" id="handle-pwm"></div>
+  <div class="panel-header">
+    <button class="back-circle-btn" onclick="closeFullscreenPanel('panel-workout-manager')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="panel-title" id="wm-panel-title-text">Manage Workouts</div>
+  </div>
+  <div id="panel-wm-dashboard-view" style="display:flex; flex-direction:column; gap:16px;">
+    <div style="display:flex; flex-direction:column; gap:10px;" id="panel-wm-routines-container"></div>
+    <div style="border-top:1px solid var(--bg3); padding-top:16px; margin-top:8px;">
+      <div class="field"><label>Create Custom Workout</label><input type="text" id="panel-wm-new-name-field" placeholder="e.g. Push B, Leg Heavy"></div>
+      <button class="btn btn-accent btn-sm" style="width:100%; margin-top:10px; padding:12px 14px;" onclick="createNewWorkoutProgramFromFullscreenHub()">+ Add Workout</button>
+    </div>
+  </div>
+  <div id="panel-wm-editing-view" style="display:none; flex-direction:column; gap:14px;">
+    <div id="fullscreen-cz-exercises-list-wrapper" style="display:flex; flex-direction:column; gap:12px;"></div>
+    <button class="btn btn-secondary btn-sm" onclick="openExerciseCatalogSelectorFullscreenPanel()">+ Add an Exercise</button>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:12px;">
+      <button class="btn btn-ghost" onclick="cancelFullscreenCustomizerEdit()">Cancel</button>
+      <button class="btn btn-accent" id="fullscreen-cz-save-trigger">Save Plan</button>
+    </div>
+  </div>
+</div>
+
+<div id="panel-exercise-catalogue-picker" class="full-panel" style="z-index:600;">
+  <div class="modal-handle-bar" id="handle-pecp"></div>
+  <div class="panel-header">
+    <button class="back-circle-btn" onclick="closeFullscreenPanel('panel-exercise-catalogue-picker')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="panel-title">Select Exercise</div>
+  </div>
+  <div id="fullscreen-catalogue-tree-nodes" style="display:flex; flex-direction:column; gap:4px;"></div>
+</div>
+
+<div id="panel-schedule-builder" class="full-panel" style="z-index:500">
+  <div class="modal-handle-bar" id="handle-psb"></div>
+  <div class="panel-header">
+    <button class="back-circle-btn" onclick="closeFullscreenPanel('panel-schedule-builder')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="panel-title">Rotation Loop</div>
+  </div>
+  <div class="field" style="margin-bottom:16px;">
+    <label>Days in loop</label>
+    <input type="number" pattern="[0-9]*" inputmode="numeric" id="sb-loop-len-field" onchange="handleFullscreenScheduleLengthInputChange(this.value)">
+  </div>
+  <div id="sb-slots-inputs-list-wrapper" style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;"></div>
+  <button class="btn btn-accent" onclick="saveFullscreenScheduleSettingsPatternMatrix()">Save Schedule</button>
+</div>
+
+<div id="rest-overlay" class="full-panel" style="z-index: 700; align-items: center; justify-content: center; padding: 40px 32px;">
+  <div class="modal-handle-bar" id="handle-pro" style="position: absolute; top: 16px;"></div>
+  <div class="rest-type" id="rest-overlay-type">— SET REST —</div>
+  <div class="rest-label" id="rest-overlay-label">Active Recovery Window...</div>
   <div class="rest-ring">
     <svg viewBox="0 0 200 200">
       <circle class="rest-ring-bg" cx="100" cy="100" r="90"/>
@@ -196,21 +314,35 @@
     </svg>
     <div class="rest-time">
       <div class="rest-seconds" id="rest-time-sec">90</div>
+      <div class="rest-unit">seconds remaining</div>
     </div>
   </div>
-  <div style="display:flex; gap:12px; width:100%; margin-bottom:12px;">
-    <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="snoozeRestTimer(10)">+ 10s</button>
-    <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="snoozeRestTimer(30)">+ 30s</button>
+  <div class="rest-next" id="rest-overlay-next"></div>
+  
+  <div class="snooze-container">
+    <button class="btn btn-secondary btn-sm" onclick="snoozeRestTimer(10)">+10s</button>
+    <button class="btn btn-secondary btn-sm" onclick="snoozeRestTimer(30)">+30s</button>
   </div>
-  <button class="btn btn-accent" style="width:100%; margin-bottom:8px;" onclick="triggerRestEndExecution()">Skip Rest</button>
+
+  <button class="btn btn-accent rest-skip-btn" id="rest-skip-trigger" style="max-width:320px; width: 100%;">Skip Rest →</button>
+  <button class="btn btn-ghost" style="margin-top:12px; max-width:320px; width: 100%;" onclick="endWorkoutEarly()">End Workout</button>
 </div>
 
-<div id="modal-overlay" class="modal-overlay" onclick="if(event.target===this)closeModal()">
-  <div class="modal">
-    <div id="modal-body"></div>
+<div id="modal-overlay" class="modal-overlay" onclick="handleModalOverlayOutsideTapDismissal(event)">
+  <div class="modal" id="swipeable-modal-node">
+    <div class="modal-handle-bar" id="modal-drag-handle-bar"></div>
+    <div style="display:flex; align-items:center; gap:12px; padding-left:4px;" id="modal-header-area">
+      <button class="back-circle-btn" onclick="closeModal()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="modal-title" id="modal-title-text" style="flex:1;">Title</div>
+    </div>
+    <div id="modal-body" style="padding-top: 4px;"></div>
   </div>
 </div>
 
 <script src="app.js"></script>
+<script>
+  const unitEl = document.getElementById('aw-unit');
+  if (unitEl) unitEl.textContent = getSettings().weightUnit || 'lbs';
+</script>
 </body>
 </html>
