@@ -144,9 +144,7 @@ function handleBottomTabClick(tabIndex) {
   UI.activeTabIndex = tabIndex; const screens = ['workout', 'calendar', 'muscles', 'settings']; UI.screen = screens[tabIndex];
   document.getElementById('main-swipe-wrapper').style.transform = `translateX(-${tabIndex * 25}%)`;
   document.querySelectorAll('.nav-btn').forEach((b, idx) => { if (idx === tabIndex) b.classList.add('active'); else b.classList.remove('active'); });
-  if (UI.screen === 'calendar') renderCalendar();
-  if (UI.screen === 'muscles') renderMuscleMap();
-  if (UI.screen === 'settings') renderSettings();
+  if (UI.screen === 'calendar') renderCalendar(); if (UI.screen === 'muscles') renderMuscleMap(); if (UI.screen === 'settings') renderSettings();
 }
 
 function showScreen(name) { const screens = ['workout', 'calendar', 'muscles', 'settings']; const idx = screens.indexOf(name); if(idx !== -1) handleBottomTabClick(idx); }
@@ -196,8 +194,7 @@ function wireFluidInteractiveSheetGestures(triggerId, containerId, isModal = fal
 // ── ONBOARDING ──
 let onboardData = { pattern: ['Push A','Pull A','Legs A','rest'], blockedWeekdays: [], equipment: EQUIPMENT_LIST, level: 'intermediate', accentTheme: 'green' };
 
-function startOnboarding() { document.getElementById('onboarding').style.display = 'flex'; generatePatternSetup(document.getElementById('ob-days').value || 4); generateOnboardColorPicker(); renderEquipmentChips(); showOnboardStep(1); }
-
+function startOnboarding() { document.getElementById('onboarding').style.display = 'flex'; generatePatternSetup(document.getElementById('ob-pattern-length').value || 4); generateOnboardColorPicker(); renderEquipmentChips(); showOnboardStep(1); }
 function showOnboardStep(n) { document.querySelectorAll('.onboard-step').forEach(s => s.classList.remove('active')); document.getElementById('onboard-' + n).classList.add('active'); }
 
 function generatePatternSetup(len) {
@@ -226,7 +223,7 @@ function renderEquipmentChips() {
 
 function onboardNext(n) {
   if (n === 1) { 
-      generatePatternSetup(document.getElementById('ob-days').value);
+      generatePatternSetup(document.getElementById('ob-pattern-length').value);
       showOnboardStep(2); 
   }
   else if (n === 2) { 
@@ -288,7 +285,6 @@ function startWorkout(type) {
   UI.workout.timerInterval = setInterval(updateWorkoutTimer, 1000); 
   
   document.getElementById('aw-submit-set-btn').onclick = () => submitFocusedActiveSet();
-  
   UI.workout.setTimestamps[0].startTime = Date.now(); renderActiveExercise();
 }
 
@@ -414,8 +410,11 @@ function showRestScreen(type, nextExName, onDone) {
   UI.restDurationTotal = duration; UI.restTimeRemaining = duration; UI.restOnDoneCallback = onDone;
   const overlay = document.getElementById('rest-overlay');
   document.getElementById('rest-overlay-type').textContent = type === 'exercise' ? 'Exercise Rest' : 'Set Rest';
-  document.getElementById('rest-overlay-label').textContent = 'Resting';
-  document.getElementById('rest-overlay-next').innerHTML = nextExName ? `Next: <strong>${nextExName}</strong>` : '';
+  
+  // Set rest label context clearly
+  document.getElementById('rest-overlay-label').textContent = type === 'exercise' ? 'Great set! Recovery time.' : 'Set complete. Rest up.';
+  document.getElementById('rest-overlay-next').innerHTML = nextExName ? `Next up: <strong>${nextExName}</strong>` : (type === 'exercise' ? '<strong>Last exercise done!</strong>' : '');
+  
   updateRestOverlayDisplay(); 
   overlay.style.display = 'flex';
   setTimeout(() => { overlay.classList.add('active'); }, 10);
@@ -453,7 +452,8 @@ function renderCalendar() {
   const grid = document.getElementById('cal-grid'); grid.innerHTML = '';
   ['S','M','T','W','T','F','S'].forEach(d => { const el = document.createElement('div'); el.className = 'cal-day-name'; el.textContent = d; grid.appendChild(el); });
   const firstDow = new Date(yr, mo, 1).getDay(); const totalDays = new Date(yr, mo + 1, 0).getDate();
-  const todayStr = new Date().toISOString().split('T')[0]; const workoutMap = {}; getWorkouts().forEach(w => { if (w.date) workoutMap[w.date.split('T')[0]] = w; });
+  const todayStr = new Date().toISOString().split('T')[0]; const workouts = getWorkouts();
+  const workoutMap = {}; workouts.forEach(w => { if (w.date) workoutMap[w.date.split('T')[0]] = w; });
 
   for (let i = 0; i < firstDow; i++) grid.appendChild(document.createElement('div'));
 
@@ -464,7 +464,8 @@ function renderCalendar() {
 
     if (isToday) cell.classList.add('today');
     if (comp) { cell.classList.add('has-workout'); cell.onclick = () => renderHistoricalSummaryAccordion(comp); }
-    else if (dayStr > todayStr && schedType !== 'rest') {
+    else if (schedType !== 'rest') {
+      // Fixes the dots not showing for past missed days.
       cell.classList.add('scheduled'); const dot = document.createElement('div'); dot.className = 'cal-day-dot';
       const normalizedName = schedType.toLowerCase(); let colorCode = '#555557';
       if (normalizedName.includes('push')) colorCode = 'var(--red)';
