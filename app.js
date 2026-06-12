@@ -118,7 +118,7 @@ function buildWorkout(type) {
   return [];
 }
 
-// BUG 5 FIXED: Prioritize specific weights saved in customizer
+// BUG 5 FIXED: Prioritize specific weights saved in customizer instead of reverting to 45
 function withSuggestion(ex) {
   const s = getSettings(); const history = getExerciseHistory(ex.id || ex.name); const step = s.weightUnit === 'lbs' ? 5 : 2.5;
   let catalogMatch = MASTER_EXERCISES_CATALOGUE.find(c => c.id === ex.id || c.name === ex.name);
@@ -141,6 +141,7 @@ function getExerciseHistory(idOrName) { return getWorkouts().flatMap(w => (w.exe
 
 let UI = { activeTabIndex: 0, screen: 'workout', calMonth: new Date(), muscleView: 'front', musclePeriod: 'week', workout: null, restTimer: null, restDurationTotal: 0, restTimeRemaining: 0, isSetViewCollapsed: true };
 
+// ── SWIPE LOGIC ──
 function handleBottomTabClick(tabIndex) {
   UI.activeTabIndex = tabIndex; const screens = ['workout', 'calendar', 'muscles', 'settings']; UI.screen = screens[tabIndex];
   document.getElementById('main-swipe-wrapper').style.transform = `translateX(-${tabIndex * 25}%)`;
@@ -271,15 +272,7 @@ function populateWorkoutDropdown(elementId, selectedValue = '') {
   const select = document.getElementById(elementId); if (!select) return; select.innerHTML = '';
   const coreOptions = ['Push A', 'Pull A', 'Legs A']; const customs = DB.get('customWorkouts') || {};
   const items = [...coreOptions, ...Object.keys(customs)]; const distinct = [...new Set(items)];
-  distinct.forEach(opt => {
-     const o = document.createElement('option'); o.value = opt; o.textContent = opt; 
-     if(opt === selectedValue) o.selected = true; 
-     select.appendChild(o); 
-  });
-  if(elementId.includes('sb-select')) {
-    const restOpt = document.createElement('option'); restOpt.value = 'rest'; restOpt.textContent = 'Rest Day'; 
-    if('rest' === selectedValue) restOpt.selected = true; select.appendChild(restOpt);
-  }
+  distinct.forEach(opt => { const o = document.createElement('option'); o.value = opt; o.textContent = opt; if(opt === selectedValue) o.selected = true; select.appendChild(o); });
 }
 
 function forceStartWorkout(type) { startWorkout(type); }
@@ -293,8 +286,6 @@ function startWorkout(type) {
   };
   document.getElementById('workout-ready').style.display = 'none'; document.getElementById('active-workout').style.display = 'flex';
   UI.workout.timerInterval = setInterval(updateWorkoutTimer, 1000); 
-  
-  document.getElementById('aw-submit-set-btn').onclick = () => submitFocusedActiveSet();
   UI.workout.setTimestamps[0].startTime = Date.now(); renderActiveExercise();
 }
 
@@ -304,7 +295,7 @@ function updateWorkoutTimer() {
   document.getElementById('workout-volume').textContent = UI.workout.totalVolume.toLocaleString();
 }
 
-function populateSwapExerciseDropdown() {
+function populateSwapExerciseDropdown(type) {
   const select = document.getElementById('aw-swap-exercise-select'); select.innerHTML = '';
   const currentEx = UI.workout.exercises[UI.workout.exIndex];
   const activeOpt = document.createElement('option'); activeOpt.value = currentEx.id || currentEx.name; activeOpt.textContent = currentEx.name; activeOpt.selected = true; select.appendChild(activeOpt);
@@ -324,7 +315,7 @@ function renderActiveExercise() {
 
   document.getElementById('aw-type').textContent = w.type; document.getElementById('aw-progress').textContent = `${w.exIndex + 1} / ${w.exercises.length}`;
   document.getElementById('aw-ex-muscles').textContent = (ex.muscles || []).map(m => MUSCLE_LABELS[m] || m).filter((v,i,a)=>a.indexOf(v)===i).join(' · ');
-  document.getElementById('aw-pr-badge').style.display = ex.isPR ? 'inline-flex' : 'none'; populateSwapExerciseDropdown();
+  document.getElementById('aw-pr-badge').style.display = ex.isPR ? 'inline-flex' : 'none'; populateSwapExerciseDropdown(w.type);
 
   const dashContainer = document.getElementById('aw-dash-container'); dashContainer.innerHTML = '';
   sets.forEach((s, i) => { const dash = document.createElement('div'); dash.className = `set-dash ${s.done ? 'completed' : (i===activeSetIdx ? 'current' : '')}`; dashContainer.appendChild(dash); });
@@ -442,8 +433,11 @@ function showRestScreen(type, nextExName, onDone) {
   UI.restDurationTotal = duration; UI.restTimeRemaining = duration; UI.restOnDoneCallback = onDone;
   const overlay = document.getElementById('rest-overlay');
   document.getElementById('rest-overlay-type').textContent = type === 'exercise' ? 'Exercise Rest' : 'Set Rest';
-  document.getElementById('rest-overlay-label').textContent = 'Resting';
-  document.getElementById('rest-overlay-next').innerHTML = nextExName ? `Next: <strong>${nextExName}</strong>` : '';
+  
+  // Set rest label context clearly
+  document.getElementById('rest-overlay-label').textContent = type === 'exercise' ? 'Great set! Recovery time.' : 'Set complete. Rest up.';
+  document.getElementById('rest-overlay-next').innerHTML = nextExName ? `Next up: <strong>${nextExName}</strong>` : (type === 'exercise' ? '<strong>Last exercise done!</strong>' : '');
+  
   updateRestOverlayDisplay(); 
   overlay.style.display = 'flex';
   setTimeout(() => { overlay.classList.add('active'); }, 10);
@@ -494,6 +488,7 @@ function renderCalendar() {
     if (isToday) cell.classList.add('today');
     if (comp) { cell.classList.add('has-workout'); cell.onclick = () => renderHistoricalSummaryAccordion(comp); }
     else if (schedType !== 'rest') {
+      // Fixes the dots not showing for past missed days.
       cell.classList.add('scheduled'); const dot = document.createElement('div'); dot.className = 'cal-day-dot';
       const normalizedName = schedType.toLowerCase(); let colorCode = '#555557';
       if (normalizedName.includes('push')) colorCode = 'var(--red)';
@@ -644,8 +639,17 @@ function setMuscleView(v) {
   renderMuscleMap(); 
 }
 
-function openFullscreenPanel(panelId) { const panel = document.getElementById(panelId); panel.style.display = 'flex'; setTimeout(() => panel.classList.add('active'), 10); }
-function closeFullscreenPanel(panelId) { const panel = document.getElementById(panelId); panel.classList.remove('active'); setTimeout(() => panel.style.display = 'none', 280); }
+function openFullscreenPanel(panelId) { 
+  const panel = document.getElementById(panelId); 
+  panel.style.display = 'flex'; 
+  setTimeout(() => panel.classList.add('active'), 10); 
+}
+
+function closeFullscreenPanel(panelId) { 
+  const panel = document.getElementById(panelId); 
+  panel.classList.remove('active'); 
+  setTimeout(() => panel.style.display = 'none', 280); 
+}
 
 // ── SETTINGS ──
 function renderSettings() {
@@ -708,11 +712,20 @@ function saveSettingsBlockedDays() { const s = getSettings(); s.blockedWeekdays 
 function openFullscreenScheduleBuilderPanel() { const s = getSettings(); document.getElementById('sb-loop-len-field').value = s.pattern.length; adjustFullscreenScheduleSlotsLayout(s.pattern.length); openFullscreenPanel('panel-schedule-builder'); }
 function handleFullscreenScheduleLengthInputChange(val) { const numericVal = parseInt(val) || 0; if (numericVal >= 1 && numericVal <= 20) { adjustFullscreenScheduleSlotsLayout(numericVal); } }
 
+// Rebuilt without innerHTML += to preserve dynamic options
 function adjustFullscreenScheduleSlotsLayout(len) {
-  const wrap = document.getElementById('sb-slots-inputs-list-wrapper'); wrap.innerHTML = ''; const s = getSettings();
+  const wrap = document.getElementById('sb-slots-inputs-list-wrapper'); 
+  const s = getSettings();
+  
+  let htmlString = '';
+  for (let i = 0; i < parseInt(len); i++) {
+    htmlString += `<div class="schedule-builder-row"><span>Day Slot #${i+1}</span><select class="fullscreen-sb-select" id="fullscreen-sb-select-${i}"></select></div>`;
+  }
+  
+  wrap.innerHTML = htmlString;
+  
   for (let i = 0; i < parseInt(len); i++) {
     const val = s.pattern[i] || 'rest';
-    wrap.innerHTML += `<div class="schedule-builder-row"><span>Day Slot #${i+1}</span><select class="fullscreen-sb-select" id="fullscreen-sb-select-${i}"></select></div>`;
     populateWorkoutDropdown(`fullscreen-sb-select-${i}`, val);
   }
 }
@@ -722,7 +735,6 @@ function saveFullscreenScheduleSettingsPatternMatrix() {
   s.pattern = arr; saveSettings(s); closeFullscreenPanel('panel-schedule-builder'); renderSettings(); renderCalendar(); renderWorkoutScreen();
 }
 
-// BUG 6 FIXED: Deduplicate Custom Workouts display mapping logic
 function openFullscreenWorkoutManagerPanel() {
   document.getElementById('panel-wm-dashboard-view').style.display = 'flex'; document.getElementById('panel-wm-editing-view').style.display = 'none';
   document.getElementById('wm-panel-title-text').textContent = "Manage Workouts";
@@ -745,14 +757,13 @@ function createNewWorkoutProgramFromFullscreenHub() {
   customs[name] = []; DB.set('customWorkouts', customs); document.getElementById('panel-wm-new-name-field').value = ''; startFullscreenWorkoutCustomizerEditorFlow(name);
 }
 
-// BUG 7 FIXED: Safe delete protocol handler wrapper
 function deleteCustomRoutine() {
   const workoutName = document.getElementById('wm-panel-title-text').textContent.replace('Editing: ', '');
   if (['Push A', 'Pull A', 'Legs A'].includes(workoutName)) {
-      alert("Core template programs can only be modified, not deleted.");
+      alert("Core templates can only be modified, not deleted.");
       return;
   }
-  if (confirm(`Purge ${workoutName} variant entirely?`)) {
+  if (confirm(`Purge ${workoutName} entirely?`)) {
       const customs = DB.get('customWorkouts') || {};
       delete customs[workoutName];
       DB.set('customWorkouts', customs);
@@ -784,6 +795,10 @@ function renderFullscreenEditorRows() {
   if (fullscreenEditorStateArray.length === 0) { container.innerHTML = `<div style="text-align:center; color:var(--text3); padding:24px; font-size:14px;">No exercises. Add one below:</div>`; return; }
   fullscreenEditorStateArray.forEach((ex, idx) => {
     const row = document.createElement('div'); row.className = 'custom-workout-row';
+    let catMatch = MASTER_EXERCISES_CATALOGUE.find(c => c.id === ex.id || c.name === ex.name);
+    let defaultWt = catMatch ? catMatch.weight : 45;
+    let wt = ex.weight || ex.suggestedWeight || defaultWt;
+    
     row.innerHTML = `
       <div class="custom-workout-row-header">
         <span style="font-weight:700; font-size:15px; color:var(--text);">${ex.name}</span>
@@ -792,7 +807,7 @@ function renderFullscreenEditorRows() {
       <div class="custom-workout-grid-inputs">
         <div><span>Sets</span><input type="number" pattern="[0-9]*" inputmode="numeric" id="fcz-set-${idx}" value="${ex.sets || 3}" onchange="syncFullscreenEditorInputs(${idx})"></div>
         <div><span>Reps</span><input type="number" pattern="[0-9]*" inputmode="numeric" id="fcz-rep-${idx}" value="${ex.reps ? ex.reps[0] : 10}" onchange="syncFullscreenEditorInputs(${idx})"></div>
-        <div><span>Weight</span><input type="number" pattern="[0-9]*" inputmode="numeric" id="fcz-wt-${idx}" value="${ex.suggestedWeight || ex.weight || 45}" onchange="syncFullscreenEditorInputs(${idx})"></div>
+        <div><span>Weight</span><input type="number" pattern="[0-9]*" inputmode="numeric" id="fcz-wt-${idx}" value="${wt}" onchange="syncFullscreenEditorInputs(${idx})"></div>
       </div>`;
     container.appendChild(row);
   });
@@ -827,8 +842,8 @@ function showModal(title, html) {
   document.getElementById('modal-title-text').textContent = title;
   document.getElementById('modal-body').innerHTML = html; 
   const overlay = document.getElementById('modal-overlay'); const modal = document.getElementById('swipeable-modal-node');
-  overlay.style.display = 'flex'; void overlay.offsetWidth;
-  overlay.classList.add('active'); modal.classList.add('active');
+  overlay.style.display = 'flex'; modal.style.transform = 'translateY(100%)';
+  setTimeout(() => { overlay.classList.add('active'); modal.classList.add('active'); }, 15);
 }
 
 function closeModal() {
