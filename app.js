@@ -841,14 +841,25 @@ function selectExerciseFromFullscreenCatalogueInjection(catalogId) {
 function showModal(title, html) { 
   document.getElementById('modal-title-text').textContent = title;
   document.getElementById('modal-body').innerHTML = html; 
-  const overlay = document.getElementById('modal-overlay'); const modal = document.getElementById('swipeable-modal-node');
-  overlay.style.display = 'flex'; modal.style.transform = 'translateY(100%)';
-  setTimeout(() => { overlay.classList.add('active'); modal.classList.add('active'); }, 15);
+  const overlay = document.getElementById('modal-overlay'); 
+  const modal = document.getElementById('swipeable-modal-node');
+  
+  overlay.style.display = 'flex'; 
+  
+  // Small delay to ensure the browser registers the display change before sliding
+  setTimeout(() => { 
+    overlay.classList.add('active'); 
+    modal.classList.add('active'); 
+  }, 15);
 }
 
 function closeModal() {
-  const overlay = document.getElementById('modal-overlay'); const modal = document.getElementById('swipeable-modal-node');
-  overlay.classList.remove('active'); modal.classList.remove('active');
+  const overlay = document.getElementById('modal-overlay'); 
+  const modal = document.getElementById('swipeable-modal-node');
+  overlay.classList.remove('active'); 
+  modal.classList.remove('active');
+  
+  // Wait for the slide-down animation to finish before hiding
   setTimeout(() => { overlay.style.display = 'none'; }, 260);
 }
 
