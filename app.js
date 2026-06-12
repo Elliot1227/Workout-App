@@ -717,16 +717,21 @@ function adjustFullscreenScheduleSlotsLayout(len) {
   const wrap = document.getElementById('sb-slots-inputs-list-wrapper'); 
   const s = getSettings();
   
+  // STEP 1: Build the empty dropdowns as one giant string first
   let htmlString = '';
   for (let i = 0; i < parseInt(len); i++) {
     htmlString += `<div class="schedule-builder-row"><span>Day Slot #${i+1}</span><select class="fullscreen-sb-select" id="fullscreen-sb-select-${i}"></select></div>`;
   }
-  
   wrap.innerHTML = htmlString;
   
+  // STEP 2: Now that they safely exist, populate them and add the Rest option
   for (let i = 0; i < parseInt(len); i++) {
     const val = s.pattern[i] || 'rest';
     populateWorkoutDropdown(`fullscreen-sb-select-${i}`, val);
+    const selNode = document.getElementById(`fullscreen-sb-select-${i}`); 
+    const restOpt = document.createElement('option'); restOpt.value = 'rest'; restOpt.textContent = 'Rest Day'; 
+    if(val === 'rest') restOpt.selected = true; 
+    selNode.appendChild(restOpt);
   }
 }
 
