@@ -13,7 +13,7 @@
 </head>
 <body>
 
-<div id="onboarding" style="display:none !important;">
+<div id="onboarding" style="display:none;">
   <div class="onboard-step active" id="onboard-1">
     <div style="padding-top:20px">
       <div style="font-size:48px;margin-bottom:16px">🏋️</div>
@@ -113,7 +113,7 @@
               <div style="flex:1; min-width:0">
                 <div style="font-size:12px; color:var(--text2);" id="aw-progress"></div>
                 <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
-                  <select id="aw-swap-exercise-select" onchange="swapActiveExerciseRuntime(this.value)"></select>
+                  <select id="aw-swap-exercise-select" onchange="swapActiveExerciseRuntime(this.value)" style="background:transparent; border:none; padding:0 24px 0 0; font-size:22px; font-weight:800; width:100%; color:var(--text); color-scheme:dark;"></select>
                 </div>
                 <div class="ex-card-meta" id="aw-ex-muscles" style="margin-top:4px;"></div>
               </div>
@@ -127,17 +127,17 @@
               <div class="focus-inputs-row">
                 <div class="focus-input-box">
                   <span>Weight (<span class="global-unit-label">lbs</span>)</span>
-                  <input type="number" pattern="[0-9]*" inputmode="decimal" id="focus-weight">
+                  <input type="number" pattern="[0-9]*" inputmode="decimal" id="focus-weight" onchange="saveActiveFocusInputs()">
                 </div>
                 <div class="focus-input-box">
                   <span>Reps</span>
-                  <input type="number" pattern="[0-9]*" inputmode="numeric" id="focus-reps">
+                  <input type="number" pattern="[0-9]*" inputmode="numeric" id="focus-reps" onchange="saveActiveFocusInputs()">
                 </div>
               </div>
             </div>
 
             <div class="big-check-container">
-              <button class="btn-big-check" id="aw-submit-set-btn"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></button>
+              <button class="btn-big-check" id="aw-submit-set-btn" onclick="submitFocusedActiveSet()"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></button>
             </div>
 
             <div class="card-sm" style="padding: 10px 12px; margin-top: 4px;">
