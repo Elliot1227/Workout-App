@@ -120,17 +120,43 @@ function buildWorkout(type) {
 
 // BUG 5 FIXED: Prioritize specific weights saved in customizer instead of reverting to 45
 function withSuggestion(ex) {
-  const s = getSettings(); const history = getExerciseHistory(ex.id || ex.name); const step = s.weightUnit === 'lbs' ? 5 : 2.5;
-  let catalogMatch = MASTER_EXERCISES_CATALOGUE.find(c => c.id === ex.id || c.name === ex.name);
+  const s = getSettings(); 
+  const history = getExerciseHistory(ex.id || ex.name); 
+  const step = s.weightUnit === 'lbs' ? 5 : 2.5;
   
-  let suggestedWeight = ex.weight || (catalogMatch ? catalogMatch.weight : 45);
-  let suggestedSets = ex.sets || 3; let suggestedReps = ex.reps ? ex.reps[0] : 10; let isPR = false;
+  let catalogMatch = MASTER_EXERCISES_CATALOGUE.find(c => c.id === ex.id || c.name === ex.name);
+  let defaultWt = ex.weight !== undefined ? ex.weight : (catalogMatch ? catalogMatch.weight : 45);
+  
+  // Extract the bottom and top of your configured rep range (e.g., 6 and 8)
+  let minReps = ex.reps ? ex.reps[0] : 8;
+  let maxReps = ex.reps ? ex.reps[1] : 12;
+
+  let suggestedWeight = defaultWt;
+  let suggestedSets = ex.sets || 3; 
+  let suggestedReps = minReps; 
+  let isPR = false;
 
   if (history.length > 0) {
-    const last = history[history.length - 1]; const lastWeight = Math.max(...last.sets.map(st => st.weight || 0)); const lastReps = last.sets.map(st => st.reps || 0);
-    const targetReps = ex.reps ? ex.reps[1] : 12;
-    if (lastReps.every(r => r >= targetReps)) { suggestedWeight = lastWeight + step; isPR = true; } else { suggestedWeight = lastWeight; }
-    suggestedSets = last.sets.length; suggestedReps = Math.round(lastReps.reduce((a,b)=>a+b,0)/lastReps.length);
+    const last = history[history.length - 1]; 
+    const lastWeight = Math.max(...last.sets.map(st => st.weight || 0)); 
+    const lastReps = last.sets.map(st => st.reps || 0);
+    
+    // Find the lowest amount of reps achieved across all sets last time
+    const minAchievedReps = Math.min(...lastReps);
+
+    if (minAchievedReps >= maxReps) {
+      // GRADUATION: You hit the top of the rep range on every set!
+      suggestedWeight = lastWeight + step; // Increase weight
+      suggestedReps = minReps;             // Reset reps back to the bottom of the range
+      isPR = true;
+    } else {
+      // PROGRESSION: Keep the weight the same, push for 1 more rep than your weakest set
+      suggestedWeight = lastWeight;
+      // Adds 1 rep, but ensures it never suggests below your min range or above your max range
+      suggestedReps = Math.max(minReps, Math.min(maxReps, minAchievedReps + 1));
+    }
+    
+    suggestedSets = last.sets.length; 
   }
   return { ...ex, suggestedWeight, suggestedSets, suggestedReps, isPR };
 }
