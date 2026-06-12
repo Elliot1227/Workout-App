@@ -13,7 +13,7 @@
 </head>
 <body>
 
-<div id="onboarding" style="display:none;">
+<div id="onboarding" style="display:none !important;">
   <div class="onboard-step active" id="onboard-1">
     <div style="padding-top:20px">
       <div style="font-size:48px;margin-bottom:16px">🏋️</div>
@@ -127,11 +127,11 @@
               <div class="focus-inputs-row">
                 <div class="focus-input-box">
                   <span>Weight (<span class="global-unit-label">lbs</span>)</span>
-                  <input type="number" pattern="[0-9]*" inputmode="decimal" id="focus-weight" onchange="saveActiveFocusInputs()">
+                  <input type="number" pattern="[0-9]*" inputmode="decimal" id="focus-weight">
                 </div>
                 <div class="focus-input-box">
                   <span>Reps</span>
-                  <input type="number" pattern="[0-9]*" inputmode="numeric" id="focus-reps" onchange="saveActiveFocusInputs()">
+                  <input type="number" pattern="[0-9]*" inputmode="numeric" id="focus-reps">
                 </div>
               </div>
             </div>
@@ -240,6 +240,9 @@
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:12px;">
       <button class="btn btn-ghost" onclick="cancelFullscreenCustomizerEdit()">Cancel</button>
       <button class="btn btn-accent" id="fullscreen-cz-save-trigger">Save Plan</button>
+    </div>
+    <div style="display:flex; justify-content:center; margin-top:12px;">
+      <button class="btn btn-danger btn-sm" onclick="deleteCustomRoutine()" style="width:100%;">Delete Routine</button>
     </div>
   </div>
 </div>
