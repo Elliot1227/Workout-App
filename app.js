@@ -118,10 +118,12 @@ function buildWorkout(type) {
   return [];
 }
 
+// BUG 5 FIXED: Prioritize specific weights saved in customizer
 function withSuggestion(ex) {
   const s = getSettings(); const history = getExerciseHistory(ex.id || ex.name); const step = s.weightUnit === 'lbs' ? 5 : 2.5;
   let catalogMatch = MASTER_EXERCISES_CATALOGUE.find(c => c.id === ex.id || c.name === ex.name);
-  let suggestedWeight = catalogMatch ? catalogMatch.weight : 45;
+  
+  let suggestedWeight = ex.weight || (catalogMatch ? catalogMatch.weight : 45);
   let suggestedSets = ex.sets || 3; let suggestedReps = ex.reps ? ex.reps[0] : 10; let isPR = false;
 
   if (history.length > 0) {
@@ -139,7 +141,6 @@ function getExerciseHistory(idOrName) { return getWorkouts().flatMap(w => (w.exe
 
 let UI = { activeTabIndex: 0, screen: 'workout', calMonth: new Date(), muscleView: 'front', musclePeriod: 'week', workout: null, restTimer: null, restDurationTotal: 0, restTimeRemaining: 0, isSetViewCollapsed: true };
 
-// ── SWIPE LOGIC ──
 function handleBottomTabClick(tabIndex) {
   UI.activeTabIndex = tabIndex; const screens = ['workout', 'calendar', 'muscles', 'settings']; UI.screen = screens[tabIndex];
   document.getElementById('main-swipe-wrapper').style.transform = `translateX(-${tabIndex * 25}%)`;
@@ -195,6 +196,7 @@ function wireFluidInteractiveSheetGestures(triggerId, containerId, isModal = fal
 let onboardData = { pattern: ['Push A','Pull A','Legs A','rest'], blockedWeekdays: [], equipment: EQUIPMENT_LIST, level: 'intermediate', accentTheme: 'green' };
 
 function startOnboarding() { document.getElementById('onboarding').style.display = 'flex'; generatePatternSetup(document.getElementById('ob-pattern-length').value || 4); generateOnboardColorPicker(); renderEquipmentChips(); showOnboardStep(1); }
+
 function showOnboardStep(n) { document.querySelectorAll('.onboard-step').forEach(s => s.classList.remove('active')); document.getElementById('onboard-' + n).classList.add('active'); }
 
 function generatePatternSetup(len) {
@@ -269,7 +271,15 @@ function populateWorkoutDropdown(elementId, selectedValue = '') {
   const select = document.getElementById(elementId); if (!select) return; select.innerHTML = '';
   const coreOptions = ['Push A', 'Pull A', 'Legs A']; const customs = DB.get('customWorkouts') || {};
   const items = [...coreOptions, ...Object.keys(customs)]; const distinct = [...new Set(items)];
-  distinct.forEach(opt => { const o = document.createElement('option'); o.value = opt; o.textContent = opt; if(opt === selectedValue) o.selected = true; select.appendChild(o); });
+  distinct.forEach(opt => {
+     const o = document.createElement('option'); o.value = opt; o.textContent = opt; 
+     if(opt === selectedValue) o.selected = true; 
+     select.appendChild(o); 
+  });
+  if(elementId.includes('sb-select')) {
+    const restOpt = document.createElement('option'); restOpt.value = 'rest'; restOpt.textContent = 'Rest Day'; 
+    if('rest' === selectedValue) restOpt.selected = true; select.appendChild(restOpt);
+  }
 }
 
 function forceStartWorkout(type) { startWorkout(type); }
@@ -294,10 +304,8 @@ function updateWorkoutTimer() {
   document.getElementById('workout-volume').textContent = UI.workout.totalVolume.toLocaleString();
 }
 
-function populateSwapExerciseDropdown(type) {
-  const select = document.getElementById('aw-swap-exercise-select'); 
-  if(!select) return;
-  select.innerHTML = '';
+function populateSwapExerciseDropdown() {
+  const select = document.getElementById('aw-swap-exercise-select'); select.innerHTML = '';
   const currentEx = UI.workout.exercises[UI.workout.exIndex];
   const activeOpt = document.createElement('option'); activeOpt.value = currentEx.id || currentEx.name; activeOpt.textContent = currentEx.name; activeOpt.selected = true; select.appendChild(activeOpt);
   MASTER_EXERCISES_CATALOGUE.forEach(ex => { if (ex.name !== currentEx.name) { const opt = document.createElement('option'); opt.value = ex.id || ex.name; opt.textContent = ex.name; select.appendChild(opt); } });
@@ -314,52 +322,42 @@ function renderActiveExercise() {
   const w = UI.workout; const ex = w.exercises[w.exIndex]; const sets = w.setData[w.exIndex];
   let activeSetIdx = sets.findIndex(s => !s.done); if (activeSetIdx === -1) activeSetIdx = sets.length - 1; w.setIndex = activeSetIdx;
 
-  const typeEl = document.getElementById('aw-type'); if(typeEl) typeEl.textContent = w.type; 
-  const progEl = document.getElementById('aw-progress'); if(progEl) progEl.textContent = `${w.exIndex + 1} / ${w.exercises.length}`;
-  const muscEl = document.getElementById('aw-ex-muscles'); if(muscEl) muscEl.textContent = (ex.muscles || []).map(m => MUSCLE_LABELS[m] || m).filter((v,i,a)=>a.indexOf(v)===i).join(' · ');
-  const prEl = document.getElementById('aw-pr-badge'); if(prEl) prEl.style.display = ex.isPR ? 'inline-flex' : 'none'; 
-  
-  populateSwapExerciseDropdown(w.type);
+  document.getElementById('aw-type').textContent = w.type; document.getElementById('aw-progress').textContent = `${w.exIndex + 1} / ${w.exercises.length}`;
+  document.getElementById('aw-ex-muscles').textContent = (ex.muscles || []).map(m => MUSCLE_LABELS[m] || m).filter((v,i,a)=>a.indexOf(v)===i).join(' · ');
+  document.getElementById('aw-pr-badge').style.display = ex.isPR ? 'inline-flex' : 'none'; populateSwapExerciseDropdown();
 
-  const dashContainer = document.getElementById('aw-dash-container'); 
-  if(dashContainer) {
-    dashContainer.innerHTML = '';
-    sets.forEach((s, i) => { const dash = document.createElement('div'); dash.className = `set-dash ${s.done ? 'completed' : (i===activeSetIdx ? 'current' : '')}`; dashContainer.appendChild(dash); });
-  }
+  const dashContainer = document.getElementById('aw-dash-container'); dashContainer.innerHTML = '';
+  sets.forEach((s, i) => { const dash = document.createElement('div'); dash.className = `set-dash ${s.done ? 'completed' : (i===activeSetIdx ? 'current' : '')}`; dashContainer.appendChild(dash); });
 
-  const titleEl = document.getElementById('aw-focus-title'); if(titleEl) titleEl.textContent = `Set ${activeSetIdx + 1}`;
+  document.getElementById('aw-focus-title').textContent = `Set ${activeSetIdx + 1}`;
   const inputWeight = document.getElementById('focus-weight'); const inputReps = document.getElementById('focus-reps');
-  if(inputWeight && inputReps) {
-    inputWeight.value = sets[activeSetIdx].weight; inputReps.value = sets[activeSetIdx].reps;
-    if (sets[activeSetIdx].done) { inputWeight.setAttribute('disabled','true'); inputReps.setAttribute('disabled','true'); }
-    else { inputWeight.removeAttribute('disabled'); inputReps.removeAttribute('disabled'); }
-  }
+  inputWeight.value = sets[activeSetIdx].weight; inputReps.value = sets[activeSetIdx].reps;
 
-  const collapseTarget = document.getElementById('collapse-target'); 
-  if(collapseTarget) {
-    collapseTarget.innerHTML = '';
-    sets.forEach((s, idx) => { collapseTarget.innerHTML += `<div class="mini-set-row ${s.done?'done':''}"><span>Set ${idx + 1}</span><span>${s.weight} lbs × ${s.reps}</span></div>`; });
-    const trigger = document.getElementById('collapse-trigger');
-    if(trigger) {
-      if (UI.isSetViewCollapsed) { trigger.classList.remove('open'); collapseTarget.classList.remove('open'); }
-      else { trigger.classList.add('open'); collapseTarget.classList.add('open'); }
-    }
-  }
+  if (sets[activeSetIdx].done) { inputWeight.setAttribute('disabled','true'); inputReps.setAttribute('disabled','true'); }
+  else { inputWeight.removeAttribute('disabled'); inputReps.removeAttribute('disabled'); }
 
-  const compList = document.getElementById('aw-completed-list');
-  if(compList) {
-    compList.innerHTML = w.completedExercises.map(ce => `
-      <div class="completed-ex"><div class="completed-info"><div class="completed-name">${ce.name}</div><div class="completed-meta">${ce.sets.length} sets done</div></div></div>`).join('');
-  }
+  const collapseTarget = document.getElementById('collapse-target'); collapseTarget.innerHTML = '';
+  sets.forEach((s, idx) => { collapseTarget.innerHTML += `<div class="mini-set-row ${s.done?'done':''}" onclick="jumpToEditSet(${idx})" style="cursor:pointer;"><span>Set ${idx + 1}</span><span>${s.weight} lbs × ${s.reps}</span></div>`; });
+
+  const trigger = document.getElementById('collapse-trigger');
+  if (UI.isSetViewCollapsed) { trigger.classList.remove('open'); collapseTarget.classList.remove('open'); }
+  else { trigger.classList.add('open'); collapseTarget.classList.add('open'); }
+
+  document.getElementById('aw-completed-list').innerHTML = w.completedExercises.map(ce => `
+    <div class="completed-ex"><div class="completed-info"><div class="completed-name">${ce.name}</div><div class="completed-meta">${ce.sets.length} sets done</div></div></div>`).join('');
+}
+
+// BUG 9: Edit previous sets cleanly
+function jumpToEditSet(idx) {
+  if (!UI.workout) return; const w = UI.workout; const sets = w.setData[w.exIndex];
+  sets[idx].done = false; w.setIndex = idx; renderActiveExercise();
 }
 
 function saveActiveFocusInputs() {
   const w = UI.workout; const sets = w.setData[w.exIndex]; const si = w.setIndex;
-  const wIn = document.getElementById('focus-weight');
-  const rIn = document.getElementById('focus-reps');
-  if (sets[si] && !sets[si].done && wIn && rIn) {
-    sets[si].weight = parseFloat(wIn.value) || 0;
-    sets[si].reps = parseInt(rIn.value) || 0;
+  if (sets[si] && !sets[si].done) {
+    sets[si].weight = parseFloat(document.getElementById('focus-weight').value) || 0;
+    sets[si].reps = parseInt(document.getElementById('focus-reps').value) || 0;
   }
 }
 
@@ -369,16 +367,28 @@ function addSetToCurrentExercise() {
   sets.push({ weight: last?last.weight:135, reps: last?last.reps:10, done: false }); renderActiveExercise();
 }
 
+// BUG 1 FIXED: Carry weights forward dynamically
 function submitFocusedActiveSet() {
   const w = UI.workout; const sets = w.setData[w.exIndex]; const si = w.setIndex; const timeLog = w.setTimestamps[w.exIndex]; const ex = w.exercises[w.exIndex];
   
-  const wIn = document.getElementById('focus-weight');
-  const rIn = document.getElementById('focus-reps');
-  if(wIn) sets[si].weight = parseFloat(wIn.value) || 0; 
-  if(rIn) sets[si].reps = parseInt(rIn.value) || 0;
+  let newWt = parseFloat(document.getElementById('focus-weight').value) || 0; 
+  let newReps = parseInt(document.getElementById('focus-reps').value) || 0;
   
-  if (sets[si].weight !== ex.suggestedWeight || sets[si].reps !== ex.suggestedReps) { sets[si].hasAsteriskDeviation = true; }
-  sets[si].done = true; const setDurationSeconds = Math.floor((Date.now() - timeLog.startTime) / 1000);
+  if (newWt !== ex.suggestedWeight || newReps !== ex.suggestedReps) { sets[si].hasAsteriskDeviation = true; }
+  
+  sets[si].weight = newWt;
+  sets[si].reps = newReps;
+  sets[si].done = true; 
+  
+  // Carry format settings to the rest of the undone sets inside the current scope array
+  for (let i = si + 1; i < sets.length; i++) {
+    if (!sets[i].done) {
+      sets[i].weight = newWt;
+      sets[i].reps = newReps;
+    }
+  }
+
+  const setDurationSeconds = Math.floor((Date.now() - timeLog.startTime) / 1000);
   timeLog.durations.push(setDurationSeconds); w.totalVolume += (sets[si].weight * sets[si].reps);
   const allDone = sets.every(s => s.done); UI.setRestMarkerStart = Date.now();
 
@@ -704,7 +714,6 @@ function adjustFullscreenScheduleSlotsLayout(len) {
     const val = s.pattern[i] || 'rest';
     wrap.innerHTML += `<div class="schedule-builder-row"><span>Day Slot #${i+1}</span><select class="fullscreen-sb-select" id="fullscreen-sb-select-${i}"></select></div>`;
     populateWorkoutDropdown(`fullscreen-sb-select-${i}`, val);
-    const selNode = document.getElementById(`fullscreen-sb-select-${i}`); const restOpt = document.createElement('option'); restOpt.value = 'rest'; restOpt.textContent = 'Rest Day'; if(val === 'rest') restOpt.selected = true; selNode.appendChild(restOpt);
   }
 }
 
@@ -713,12 +722,16 @@ function saveFullscreenScheduleSettingsPatternMatrix() {
   s.pattern = arr; saveSettings(s); closeFullscreenPanel('panel-schedule-builder'); renderSettings(); renderCalendar(); renderWorkoutScreen();
 }
 
+// BUG 6 FIXED: Deduplicate Custom Workouts display mapping logic
 function openFullscreenWorkoutManagerPanel() {
   document.getElementById('panel-wm-dashboard-view').style.display = 'flex'; document.getElementById('panel-wm-editing-view').style.display = 'none';
   document.getElementById('wm-panel-title-text').textContent = "Manage Workouts";
-  const customs = DB.get('customWorkouts') || {}; const coreWorkouts = ['Push A', 'Pull A', 'Legs A']; const allRoutinesList = [...coreWorkouts, ...Object.keys(customs)];
+  
+  const customs = DB.get('customWorkouts') || {}; const coreWorkouts = ['Push A', 'Pull A', 'Legs A']; 
+  const distinctRoutines = [...new Set([...coreWorkouts, ...Object.keys(customs)])];
+  
   const container = document.getElementById('panel-wm-routines-container'); container.innerHTML = '';
-  container.innerHTML = allRoutinesList.map(name => `
+  container.innerHTML = distinctRoutines.map(name => `
     <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg2); padding:16px; border-radius:var(--radius); margin-bottom:4px;">
       <span style="font-weight:700; font-size:16px; padding-left:2px;">${name}</span>
       <button class="btn btn-accent btn-sm" onclick="startFullscreenWorkoutCustomizerEditorFlow('${name}')">Edit Routine</button>
@@ -732,6 +745,21 @@ function createNewWorkoutProgramFromFullscreenHub() {
   customs[name] = []; DB.set('customWorkouts', customs); document.getElementById('panel-wm-new-name-field').value = ''; startFullscreenWorkoutCustomizerEditorFlow(name);
 }
 
+// BUG 7 FIXED: Safe delete protocol handler wrapper
+function deleteCustomRoutine() {
+  const workoutName = document.getElementById('wm-panel-title-text').textContent.replace('Editing: ', '');
+  if (['Push A', 'Pull A', 'Legs A'].includes(workoutName)) {
+      alert("Core template programs can only be modified, not deleted.");
+      return;
+  }
+  if (confirm(`Purge ${workoutName} variant entirely?`)) {
+      const customs = DB.get('customWorkouts') || {};
+      delete customs[workoutName];
+      DB.set('customWorkouts', customs);
+      openFullscreenWorkoutManagerPanel();
+  }
+}
+
 let fullscreenEditorStateArray = [];
 function startFullscreenWorkoutCustomizerEditorFlow(workoutName) {
   document.getElementById('panel-wm-dashboard-view').style.display = 'none'; document.getElementById('panel-wm-editing-view').style.display = 'flex';
@@ -740,7 +768,15 @@ function startFullscreenWorkoutCustomizerEditorFlow(workoutName) {
   if (workoutName === 'Push A' || workoutName === 'Pull A' || workoutName === 'Legs A') { currentList = customs[workoutName] || BASE_SYSTEM_LIBRARY[workoutName]; } 
   else { currentList = customs[workoutName] || []; }
   fullscreenEditorStateArray = JSON.parse(JSON.stringify(currentList)); renderFullscreenEditorRows();
-  document.getElementById('fullscreen-cz-save-trigger').onclick = () => { customs[workoutName] = fullscreenEditorStateArray; DB.set('customWorkouts', customs); openFullscreenWorkoutManagerPanel(); renderWorkoutScreen(); };
+  
+  document.getElementById('fullscreen-cz-save-trigger').onclick = () => { 
+    if (fullscreenEditorStateArray.length === 0 && !['Push A', 'Pull A', 'Legs A'].includes(workoutName)) {
+      delete customs[workoutName];
+    } else {
+      customs[workoutName] = fullscreenEditorStateArray; 
+    }
+    DB.set('customWorkouts', customs); openFullscreenWorkoutManagerPanel(); renderWorkoutScreen(); 
+  };
 }
 
 function renderFullscreenEditorRows() {
@@ -791,8 +827,8 @@ function showModal(title, html) {
   document.getElementById('modal-title-text').textContent = title;
   document.getElementById('modal-body').innerHTML = html; 
   const overlay = document.getElementById('modal-overlay'); const modal = document.getElementById('swipeable-modal-node');
-  overlay.style.display = 'flex'; modal.style.transform = 'translateY(100%)';
-  setTimeout(() => { overlay.classList.add('active'); modal.classList.add('active'); }, 15);
+  overlay.style.display = 'flex'; void overlay.offsetWidth;
+  overlay.classList.add('active'); modal.classList.add('active');
 }
 
 function closeModal() {
